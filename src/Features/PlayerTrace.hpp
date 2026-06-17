@@ -119,6 +119,8 @@ public:
 	int GetTasTraceTick();
 	// Set tick offset globally
 	void SetTickOffset(std::string &trace_name, int offset);
+	// Reset all offsets
+	void ResetAllTraceOffsets();
 
 	// Returns an identifier for the scope which should be passed to ExitLogScope
 	void EnterLogScope(const char *name);

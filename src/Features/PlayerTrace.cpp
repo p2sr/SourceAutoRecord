@@ -900,6 +900,16 @@ void PlayerTrace::SetTickOffset(std::string &trace_name, int offset) {
 	playerTrace->tickOffsets[trace_name] = offset;
 }
 
+void PlayerTrace::ResetAllTraceOffsets() {
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		Trace &trace = it->second;
+
+		trace.tasTickOffset = 0;
+	}
+
+	playerTrace->tickOffsets.clear();
+}
+
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);
@@ -1266,6 +1276,22 @@ CON_COMMAND(sar_trace_sync, "sar_trace_sync - syncs all the hovered traces to th
 
 		playerTrace->SetTickOffset(h.trace_name, offset);
 	}
+}
+
+CON_COMMAND(sar_trace_sync_reset_all, "sar_trace_sync_reset_all - resets the sync of all the player traces.\n") {
+	playerTrace->ResetAllTraceOffsets();
+}
+
+CON_COMMAND(sar_trace_sync_reset, "sar_trace_sync_reset <name> - resets the sync of the player trace by the given name.\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(sar_trace_sync_reset.ThisPtr()->m_pszHelpString);
+	}
+
+	std::string trace_name = args[1];
+
+	playerTrace->GetTrace(trace_name)->tasTickOffset = 0;
+
+	playerTrace->SetTickOffset(trace_name, 0);
 }
 
 void PlayerTrace::EnterLogScope(const char *name) {
