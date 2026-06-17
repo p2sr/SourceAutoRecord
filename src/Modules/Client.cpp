@@ -842,6 +842,12 @@ Hook g_DrawOpaqueRenderablesHook(&Client::DrawOpaqueRenderables_Hook);
 
 extern Hook g_CalcViewModelLagHook;
 DETOUR_T(void, Client::CalcViewModelLag, Vector &origin, QAngle &angles, QAngle &original_angles) {
+	if (tasPlayer->IsRunning() && !tasPlayer->IsUsingTools() && sar_tas_use_raw_interpolation.GetBool()) {
+		auto offset = tasControllers[GET_SLOT()]->GetExtraMouseSamplesAngles();
+		angles.x += offset.x;
+		angles.y += offset.y;
+	}
+
 	if (sar_disable_weapon_sway.GetBool()) {
 		return;
 	}

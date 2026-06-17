@@ -405,6 +405,12 @@ void Camera::OverrideView(ViewSetup *m_View) {
 	float real_frame_time = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame).count();
 	last_frame = now;
 
+	if (tasPlayer->IsRunning() && !tasPlayer->IsUsingTools() && sar_tas_use_raw_interpolation.GetBool()) {
+		auto offset = tasControllers[GET_SLOT()]->GetExtraMouseSamplesAngles();
+		m_View->angles.x += offset.x;
+		m_View->angles.y += offset.y;
+	}
+
 	if (sar_cam_force_eye_pos.GetBool() && sv_cheats.GetBool()) {
 		Vector eyePos;
 		QAngle eyeAng;

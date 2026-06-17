@@ -40,7 +40,7 @@ private:
 
 	bool inExtraMouseSamples;
 	float extraMouseSamplesAccumulatedTime;
-	QAngle viewanglesPreExtraMouseSamples;
+	QAngle extraMouseSamplesAngles;
 
 public:
 	TasController();
@@ -63,15 +63,18 @@ public:
 	bool GetButtonState(TasControllerInput i);
 	void SetButtonState(TasControllerInput i, bool state);
 
+	QAngle GetExtraMouseSamplesAngles();
+
 	void ControllerMove(int nSlot, float flFrametime, CUserCmd *cmd);
 
 private:
-	void ApplyViewAnalog(int nSlot, CUserCmd *cmd, Vector analog, bool usePreExtraMouseSampleAngles);
+	void ApplyViewAnalog(int nSlot, CUserCmd *cmd, Vector analog);
 };
 
 extern TasController *tasControllers[2];
 
 extern Variable sar_tas_real_controller_debug;
+extern Variable sar_tas_use_raw_interpolation;
 
 extern Variable cl_pitchdown;
 extern Variable cl_pitchup;
