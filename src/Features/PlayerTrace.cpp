@@ -142,6 +142,8 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 
 		if (it != playerTrace->tickOffsets.end()) {
 			traces[trace_name].tasTickOffset = it->second;
+		} else {
+			playerTrace->tickOffsets[trace_name] = 0;
 		}
 	}
 
@@ -910,6 +912,20 @@ void PlayerTrace::ResetAllTraceOffsets() {
 	playerTrace->tickOffsets.clear();
 }
 
+std::vector<std::string> PlayerTrace::GetOffsetAutoComplete() {
+	std::vector<std::string> completions{};
+
+	for (auto it = playerTrace->tickOffsets.begin(); it != playerTrace->tickOffsets.end(); ++it) {
+		auto trace_name = it->first;
+
+		auto offsets = it->second;
+
+		completions.push_back(trace_name + " " + std::to_string(offsets));
+	}
+
+	return completions;
+}
+
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);
@@ -1260,19 +1276,81 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 	}
 }
 
-CON_COMMAND(sar_trace_sync, "sar_trace_sync [main trace] - syncs all the hovered traces to the fastest or given trace.\n") {
+DECL_COMMAND_COMPLETION(sar_trace_offset) {
+	std::vector<std::string> completions = playerTrace->GetOffsetAutoComplete();
+
+    for (auto& comp : completions) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(comp.c_str(), match)) {
+                items.push_back(comp);
+            }
+        } else {
+            items.push_back(comp);
+        }
+    }
+
+    FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(
+	sar_trace_offset,
+	"sar_trace_offset <name> <offset> - sets a tick offset for given trace.\n",
+	FCVAR_NONE,
+	AUTOCOMPLETION_FUNCTION(sar_trace_offset)) {
+	if (args.ArgC() < 3) {
+		return console->Print(sar_trace_offset.ThisPtr()->m_pszHelpString);
+	}
+
+	std::string trace_name = args[1];
+	auto offset = atoi(args[2]);
+	
+	auto trace = playerTrace->GetTrace(trace_name);
+
+	if (trace) {
+		trace->tasTickOffset = offset;
+	}
+
+	playerTrace->SetTickOffset(trace_name, offset);
+}
+
+CON_COMMAND(sar_trace_offset_sync, "sar_trace_offset_sync - syncs all the hovered traces to the fastest trace.\n") {
 	size_t pivot_tick = SIZE_MAX;
 
-	if (args.ArgC() == 2) {
-		for (auto &h : hovers) {
-			if (args[1] == h.trace_name) {
-				pivot_tick = h.tick;
-				break;
-			}
-		}
-	} else {
-		for (auto &h : hovers) {
-			pivot_tick = std::min(pivot_tick, h.tick);
+
+	for (auto &h : hovers) {
+		pivot_tick = std::min(pivot_tick, h.tick);
+	}
+
+	if (pivot_tick == SIZE_MAX) {
+		return;
+	}
+
+	for (auto &h : hovers) {
+		auto trace = playerTrace->GetTrace(h.trace_name);
+
+		auto offset = pivot_tick - h.tick;
+
+		trace->tasTickOffset = offset;
+
+		playerTrace->SetTickOffset(h.trace_name, offset);
+	}
+}
+
+CON_COMMAND(sar_trace_offset_sync_to, "sar_trace_offset_sync_to [main trace] - syncs all the hovered traces to the given trace.\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(sar_trace_offset_sync_to.ThisPtr()->m_pszHelpString);
+	}
+		
+	size_t pivot_tick = SIZE_MAX;
+
+	for (auto &h : hovers) {
+		if (args[1] == h.trace_name) {
+			pivot_tick = h.tick;
+			break;
 		}
 	}
 
@@ -1291,20 +1369,8 @@ CON_COMMAND(sar_trace_sync, "sar_trace_sync [main trace] - syncs all the hovered
 	}
 }
 
-CON_COMMAND(sar_trace_sync_reset_all, "sar_trace_sync_reset_all - resets the sync of all the player traces.\n") {
+CON_COMMAND(sar_trace_offset_clear, "sar_trace_offset_clear - clears the offset of all the player traces.\n") {
 	playerTrace->ResetAllTraceOffsets();
-}
-
-CON_COMMAND(sar_trace_sync_reset, "sar_trace_sync_reset <name> - resets the sync of the player trace by the given name.\n") {
-	if (args.ArgC() < 2) {
-		return console->Print(sar_trace_sync_reset.ThisPtr()->m_pszHelpString);
-	}
-
-	std::string trace_name = args[1];
-
-	playerTrace->GetTrace(trace_name)->tasTickOffset = 0;
-
-	playerTrace->SetTickOffset(trace_name, 0);
 }
 
 void PlayerTrace::EnterLogScope(const char *name) {

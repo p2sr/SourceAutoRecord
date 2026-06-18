@@ -121,6 +121,7 @@ public:
 	void SetTickOffset(std::string &trace_name, int offset);
 	// Reset all offsets
 	void ResetAllTraceOffsets();
+	std::vector<std::string> GetOffsetAutoComplete();
 
 	// Returns an identifier for the scope which should be passed to ExitLogScope
 	void EnterLogScope(const char *name);

@@ -684,6 +684,10 @@
 |sar_trace_export|cmd|sar_trace_export \<filename> [trace name] - Export trace data into a csv file.|
 |sar_trace_font_size|3.0|The size of text overlaid on recorded traces.|
 |sar_trace_hide|cmd|sar_trace_hide [trace name] - hide the trace with the given name|
+|sar_trace_offset|cmd|sar_trace_offset \<name> \<offset> - sets a tick offset for given trace.|
+|sar_trace_offset_clear|cmd|sar_trace_offset_clear - clears the offset of all the player traces.|
+|sar_trace_offset_sync|cmd|sar_trace_offset_sync - syncs all the hovered traces to the fastest trace.|
+|sar_trace_offset_sync_to|cmd|sar_trace_offset_sync_to [main trace] - syncs all the hovered traces to the given trace.|
 |sar_trace_override|1|Clears old trace when you start recording to it instead of recording on top of it.|
 |sar_trace_playback_rate|0|Playback rate of the trace bbox. Loops upon finishing.|
 |sar_trace_portal_opacity|100|Opacity of trace portal previews.|
@@ -692,9 +696,6 @@
 |sar_trace_record|0|Record the trace to a slot. Set to 0 for not recording|
 |sar_trace_reveal|0|Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.|
 |sar_trace_show|cmd|sar_trace_show [trace name] - show the trace with the given name|
-|sar_trace_sync|cmd|sar_trace_sync [main trace] - syncs all the hovered traces to the fastest or given trace.|
-|sar_trace_sync_reset|cmd|sar_trace_sync_reset \<name> - resets the sync of the player trace by the given name.|
-|sar_trace_sync_reset_all|cmd|sar_trace_sync_reset_all - resets the sync of all the player traces.|
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
 |sar_trace_teleport_eye|cmd|sar_trace_teleport_eye \<tick> [player slot] [trace name] - teleports the player to the eye position at the given trace tick on the given trace (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
 |sar_trace_use_shot_eyeoffset|1|Uses eye offset and angles accurate for portal shooting.|
