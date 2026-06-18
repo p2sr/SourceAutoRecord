@@ -607,7 +607,7 @@
 |sar_sum_result|cmd|sar_sum_result - prints result of summary|
 |sar_sum_stop|cmd|sar_sum_stop - stops summary counter|
 |sar_tas_advance|cmd|sar_tas_advance - advances TAS playback by one tick|
-|sar_tas_autosave_raw|1|Enables automatic saving of raw, processed TAS scripts.|
+|sar_tas_autosave_raw|1|Enables automatic saving of raw TAS scripts after successful TAS playback.<br>If set to 2, the raw script will also autosave when playback is manually interrupted.|
 |sar_tas_check_disable|0|Globally disable the 'check' TAS tool.|
 |sar_tas_check_max_replays|15|Maximum replays for the 'check' TAS tool until it gives up.|
 |sar_tas_debug|0|Debug TAS information. 0 - none, 1 - basic, 2 - all.|
