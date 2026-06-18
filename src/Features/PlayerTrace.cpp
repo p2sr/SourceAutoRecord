@@ -1260,17 +1260,30 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 	}
 }
 
-CON_COMMAND(sar_trace_sync, "sar_trace_sync - syncs all the hovered traces to the fastest trace.\n") {
-	size_t min_tick = SIZE_MAX;
+CON_COMMAND(sar_trace_sync, "sar_trace_sync [main trace] - syncs all the hovered traces to the fastest or given trace.\n") {
+	size_t pivot_tick = SIZE_MAX;
 
-	for (auto &h : hovers) {
-		min_tick = std::min(min_tick, h.tick);
+	if (args.ArgC() == 2) {
+		for (auto &h : hovers) {
+			if (args[1] == h.trace_name) {
+				pivot_tick = h.tick;
+				break;
+			}
+		}
+	} else {
+		for (auto &h : hovers) {
+			pivot_tick = std::min(pivot_tick, h.tick);
+		}
+	}
+
+	if (pivot_tick == SIZE_MAX) {
+		return;
 	}
 
 	for (auto &h : hovers) {
 		auto trace = playerTrace->GetTrace(h.trace_name);
 
-		auto offset = min_tick - h.tick;
+		auto offset = pivot_tick - h.tick;
 
 		trace->tasTickOffset = offset;
 

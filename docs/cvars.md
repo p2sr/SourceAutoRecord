@@ -692,7 +692,7 @@
 |sar_trace_record|0|Record the trace to a slot. Set to 0 for not recording|
 |sar_trace_reveal|0|Only draw traces until the specified tick. Set to bbox to draw until the bbox tick.|
 |sar_trace_show|cmd|sar_trace_show [trace name] - show the trace with the given name|
-|sar_trace_sync|cmd|sar_trace_sync - syncs all the hovered traces to the fastest trace.|
+|sar_trace_sync|cmd|sar_trace_sync [main trace] - syncs all the hovered traces to the fastest or given trace.|
 |sar_trace_sync_reset|cmd|sar_trace_sync_reset \<name> - resets the sync of the player trace by the given name.|
 |sar_trace_sync_reset_all|cmd|sar_trace_sync_reset_all - resets the sync of all the player traces.|
 |sar_trace_teleport_at|cmd|sar_trace_teleport_at \<tick> [player slot] [trace name] - teleports the player at the given trace tick on the given trace ID (defaults to hovered one or the first one ever made) in the given slot (defaults to 0).|
