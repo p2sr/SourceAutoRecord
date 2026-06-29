@@ -469,6 +469,8 @@ SIGSCAN_DEFAULT(Cmd_ShutdownSig, "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?",
                                  "C7 44 24 04 00 00 00 00 C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? C7")
 OFFSET_DEFAULT(Cmd_ShutdownOff, 3, 11)
 OFFSET_DEFAULT(Cmd_ShutdownOff2, 10, 10)
+SIGSCAN_DEFAULT(CM_RegisterPaintMap_PaintCheck, "32 C9 85 C0",
+                                               "") // TODO: Linux support. ("paintinmap" -> xref -> CM_RegisterPaintMap -> xor instruction)
 
 
 // EngineDemoRecorder

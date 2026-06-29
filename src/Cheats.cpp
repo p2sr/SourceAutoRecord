@@ -53,6 +53,7 @@ Variable sar_disable_viewmodel_shadows("sar_disable_viewmodel_shadows", "0", 0, 
 Variable sar_floor_reportals("sar_floor_reportals", "0", "Toggles floor reportals. Requires cheats.\n", FCVAR_CHEAT);
 Variable sar_loads_coop_dots("sar_loads_coop_dots", "0", "Toggles the loading screen dots during map transitions in coop.\n");
 Variable sar_disable_autograb("sar_disable_autograb", "0", 0, 1, "Disables the auto-grab in coop. Requires host to enable it for everyone that also enables it.\n");
+Variable sar_force_enable_paint_in_map("sar_force_enable_paint_in_map", "0", 0, 1, "Forces paint to be enabled on next map load.\n");
 
 Variable sv_laser_cube_autoaim;
 Variable ui_loadingscreen_transition_time;
@@ -258,6 +259,7 @@ ON_EVENT(RENDER) {
 ON_EVENT(PRE_TICK) {
 	Cheats::CheckUICoopDots();
 	Cheats::CheckAutoGrab();
+	Cheats::CheckPaintInMap();
 }
 
 CON_COMMAND(sar_getpos, "sar_getpos [slot] [server|client] - get the absolute origin and angles of a particular player from either the server or client. Defaults to slot 0 and server.\n") {
@@ -332,6 +334,7 @@ Memory::Patch *g_coopLoadingDotsPatch;
 Memory::Patch *g_autoGrabPatchServer;
 Memory::Patch *g_autoGrabPatchClient;
 Memory::Patch *g_promoFlagsPatch;
+Memory::Patch *g_forcePaintInMap;
 
 void Cheats::Init() {
 	sv_laser_cube_autoaim = Variable("sv_laser_cube_autoaim");
@@ -406,6 +409,14 @@ void Cheats::Init() {
 		unsigned char promoFlagsByte = 0x00;
 		g_promoFlagsPatch->Execute(Memory::Deref<uintptr_t>(portal2PromoFlags), &promoFlagsByte, 1); // Note: Has to be active before map loads.
 		g_promoFlagsPatch->Restore();
+	}
+
+	g_forcePaintInMap = new Memory::Patch();
+	auto paintInMapBool = Memory::Scan(MODULE("engine"), Offsets::CM_RegisterPaintMap_PaintCheck);
+	if (paintInMapBool) {
+		unsigned char forcePaintBytes[] = {0xB1, 0x01};
+		g_forcePaintInMap->Execute(paintInMapBool, forcePaintBytes, 2);
+		g_forcePaintInMap->Restore();
 	}
 
 	Variable::RegisterAll();
@@ -633,4 +644,27 @@ CON_COMMAND_F_COMPLETION(sar_set_promo_items_state, "sar_set_promo_items_state <
 	}
 	g_promoFlagsPatch->Restore();
 	g_promoFlagsPatch->Execute(&targetFlags, 1);
+}
+
+void Cheats::CheckPaintInMap() {
+	bool enabled = sar_force_enable_paint_in_map.GetBool();
+	if (enabled && (!g_forcePaintInMap || !g_forcePaintInMap->IsInit())) {
+		console->Print("sar_force_enable_paint_in_map is not available.\n");
+		sar_force_enable_paint_in_map.SetValue(0);
+		return;
+	}
+	if (!sv_cheats.GetBool() && enabled) {
+		console->Print("sar_force_enable_paint_in_map requires sv_cheats 1.\n");
+		sar_force_enable_paint_in_map.SetValue(0);
+		enabled = false;
+	}
+	if (enabled == g_forcePaintInMap->IsPatched()) {
+		return;
+	}
+
+	if (enabled) {
+		g_forcePaintInMap->Execute();
+	} else {
+		g_forcePaintInMap->Restore();
+	}
 }
