@@ -444,6 +444,8 @@ void Cheats::Shutdown() {
 	SAFE_DELETE(g_autoGrabPatchClient);
 	g_promoFlagsPatch->Restore();
 	SAFE_DELETE(g_promoFlagsPatch);
+	g_forcePaintInMap->Restore();
+	SAFE_DELETE(g_forcePaintInMap);
 }
 
 
