@@ -1,4 +1,4 @@
-#include "Offsets/Portal 2 9568.hpp"
+#include "Offsets/Portal 2 10090.hpp"
 // Portal Stories: Mel, Reloaded
 
 OFFSET_LINUX(tickcount, 74)

@@ -183,10 +183,10 @@ Portal2::Portal2() {
 void Portal2::LoadOffsets() {
 	using namespace Offsets;
 
-	#include "Offsets/Portal 2 9568.hpp"
+	#include "Offsets/Portal 2 10090.hpp"
 }
 const char *Portal2::Version() {
-	return "Portal 2 (9568)";
+	return "Portal 2 (10090)";
 }
 const float Portal2::Tickrate() {
 	return 60;
