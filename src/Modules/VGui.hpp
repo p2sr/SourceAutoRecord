@@ -41,3 +41,7 @@ public:
 };
 
 extern VGui *vgui;
+
+extern bool g_drawImgui;
+
+extern Variable sar_hud_bg;

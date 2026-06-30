@@ -1,6 +1,7 @@
 .vscode/
 *.so
 *.o
+*.d
 obj/
 src/Features/Experimental/
 docs/images/drawings/

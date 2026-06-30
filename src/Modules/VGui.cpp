@@ -8,9 +8,28 @@
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
 #include "Modules/Surface.hpp"
+#include "Console.hpp"
 #include "SAR.hpp"
+#include "Surface.hpp"
+#include <cstdint>
+#include <imgui.h>
+#include <imgui_internal.h>
+#include "Utils/SDK/Math.hpp"
+#include "Modules/InputSystem.hpp"
+#include "Imgui/ImguiWindow.hpp"
+#include "Imgui/ToastPos.hpp"
+#include "Imgui/DemoPlayer.hpp"
+#include "Imgui/FileBrowser.hpp"
+#include "Imgui/ImguiHudSettings.hpp"
+#include "Imgui/ImguiHud.hpp"
+
+#include "Imgui/Hud/ImguiHuds.hpp"
+#include "Imgui/Hud/ShowposHud.hpp"
+
+#include "Imgui/ImguiRender.hpp"
 
 #include <algorithm>
+#include <cstring>
 
 REDECL(VGui::Paint);
 REDECL(VGui::UpdateProgressBar);
@@ -108,6 +127,8 @@ DETOUR(VGui::Paint, PaintMode_t mode) {
 		lastCtx[1] = *ctx;
 	}
 
+  DrawImgui();
+
 	surface->FinishDrawing();
 
 	return result;
@@ -133,6 +154,8 @@ bool VGui::IsUIVisible() {
 }
 
 bool VGui::Init() {
+  InitImgui();
+
 	this->enginevgui = Interface::Create(this->Name(), "VEngineVGui001");
 	if (this->enginevgui) {
 		this->IsGameUIVisible = this->enginevgui->Original<_IsGameUIVisible>(Offsets::IsGameUIVisible);

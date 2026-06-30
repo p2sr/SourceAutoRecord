@@ -7,8 +7,13 @@
 #include "Offsets.hpp"
 #include "Utils.hpp"
 #include "Scheme.hpp"
+#include "InputSystem.hpp"
+#include "VGui.hpp"
+#include "Engine.hpp"
 
 #include <stdarg.h>
+
+REDECL(Surface::LockCursor);
 
 CON_COMMAND(sar_font_get_name, "sar_font_get_name <id> - gets the name of a font from its index\n") {
 	if (args.ArgC() != 2) {
@@ -98,6 +103,142 @@ void Surface::DrawRect(Color clr, const Bounds<int> &bounds) {
 	this->DrawRect(clr, bounds.vBegin.x, bounds.vBegin.y, bounds.vEnd.x, bounds.vEnd.y);
 }
 
+struct TriangleTexture {
+  std::vector<unsigned char> pixels;
+  int width;
+  int height;
+};
+
+TriangleTexture GenerateTriangleTexture(
+  Color clr,
+  Vector2<float> a,
+  Vector2<float> b,
+  Vector2<float> c) {
+  float minXf = std::floor(std::min({a.x, b.x, c.x}));
+  float minYf = std::floor(std::min({a.y, b.y, c.y}));
+
+  float maxXf = std::ceil(std::max({a.x, b.x, c.x}));
+  float maxYf = std::ceil(std::max({a.y, b.y, c.y}));
+
+  int w = std::max(1, (int)(maxXf - minXf));
+  int h = std::max(1, (int)(maxYf - minYf));
+
+  a.x -= minXf;
+  a.y -= minYf;
+
+  b.x -= minXf;
+  b.y -= minYf;
+
+  c.x -= minXf;
+  c.y -= minYf;
+
+  std::vector<unsigned char> pixels(w * h * 4, 0);
+
+  auto Edge = [](const Vector2<float>& a, const Vector2<float>& b, const Vector2<float> p) {
+    return (p.x - a.x) * (b.y - a.y) -
+           (p.y - a.y) * (b.x - a.x);
+  };
+
+  float area = Edge(a, b, c);
+
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      Vector2<float> p = Vector2<float>{
+        x + 0.5f,
+        y + 0.5f
+      };
+
+      float w0 = Edge(b, c, p);
+      float w1 = Edge(c, a, p);
+      float w2 = Edge(a, b, p);
+
+      bool inside;
+
+      if (area > 0.0f) {
+        inside = w0 >= 0.0f &&
+                 w1 >= 0.0f &&
+                 w2 >= 0.0f;
+      } else {
+        inside = w0 <= 0.0f &&
+                 w1 <= 0.0f &&
+                 w2 <= 0.0f;
+      }
+
+      if (inside) {
+        int i = (y * w + x) * 4;
+        pixels[i + 0] = clr.r;
+        pixels[i + 1] = clr.g;
+        pixels[i + 2] = clr.b;
+        pixels[i + 3] = clr.a;
+      }
+    }
+  }
+
+  return {
+    std::move(pixels),
+    w,
+    h
+  };
+}
+
+void Surface::DrawTriangle(Color clr, Vector2<float> v0, Vector2<float> v1, Vector2<float> v2) {
+  this->DrawSetColor(
+    this->matsurface->ThisPtr(),
+    clr.r,
+    clr.g,
+    clr.b,
+    clr.a
+  );
+
+  if (v1.y < v0.y) std::swap(v0, v1);
+  if (v2.y < v0.y) std::swap(v0, v2);
+  if (v2.y < v1.y) std::swap(v1, v2);
+
+  auto interpX = [](
+    const Vector2<float>& a,
+    const Vector2<float>& b,
+    float y
+  ) {
+    if (std::abs(b.y - a.y) < 0.0001f) return a.x;
+
+    return a.x + (y - a.y) * (b.x - a.x) / (b.y - a.y);
+  };
+
+  int yStart = (int)std::ceil(v0.y);
+  int yMid = (int)std::ceil(v1.y);
+  int yEnd = (int)std::ceil(v2.y);
+
+  for (int y = yStart; y < yMid; y++) {
+    float x1 = interpX(v0, v2, (float)y);
+    float x2 = interpX(v0, v1, (float)y);
+
+    if (x1 > x2) std::swap(x1, x2);
+
+    this->DrawColoredLine(
+      (int)std::round(x1),
+      y,
+      (int)std::round(x2),
+      y,
+      clr
+    );
+  }
+
+  for (int y = yMid; y < yEnd; y++) {
+    float x1 = interpX(v0, v2, (float)y);
+    float x2 = interpX(v1, v2, (float)y);
+
+    if (x1 > x2) std::swap(x1, x2);
+
+    this->DrawColoredLine(
+      (int)std::round(x1),
+      y,
+      (int)std::round(x2),
+      y,
+      clr
+    );
+  }
+}
+
 void Surface::DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char *fmt, ...) {
 	this->DrawRect(clr, x0, y0, x1, y1);
 
@@ -159,8 +300,23 @@ int __cdecl Surface::FinishDrawingFallback() {
 	return 0;
 }
 
+// THIS IS THE HOOK!!!!
+DETOUR_T(void, Surface::LockCursor) {
+
+  // static void* inputCtx = engine->GetInputContext(engine->engineClient->ThisPtr(), 0);
+  // console->Print("%p\n", inputCtx);
+
+  if (g_drawImgui) {
+    surface->UnlockCursor();
+
+    return;
+  }
+
+  return LockCursor(thisptr);
+}
+
 bool Surface::Init() {
-	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", false);
+	this->matsurface = Interface::Create(this->Name(), "VGUI_Surface031", true);
 	if (this->matsurface) {
 		this->DrawSetColor = matsurface->Original<_DrawSetColor>(Offsets::DrawSetColor);
 		this->DrawFilledRect = matsurface->Original<_DrawFilledRect>(Offsets::DrawFilledRect);
@@ -173,6 +329,7 @@ bool Surface::Init() {
 		this->DrawTextLen = matsurface->Original<_DrawTextLen>(Offsets::DrawTextLen);
 		this->GetKernedCharWidth = matsurface->Original<_GetKernedCharWidth>(Offsets::GetKernedCharWidth);
 		this->GetFontName = matsurface->Original<_GetFontName>(Offsets::GetFontName);
+    this->DrawTexturedPolygon = matsurface->Original<_DrawTexturedPolygon>(Offsets::DrawTexturedPolygon);
 
 		this->DrawSetTextureFile = matsurface->Original<_DrawSetTextureFile>(Offsets::DrawSetTextureFile);
 		this->DrawSetTextureRGBA = matsurface->Original<_DrawSetTextureRGBA>(Offsets::DrawSetTextureRGBA);
@@ -181,6 +338,7 @@ bool Surface::Init() {
 		this->DrawTexturedRect = matsurface->Original<_DrawTexturedRect>(Offsets::DrawTexturedRect);
 		this->IsTextureIDValid = matsurface->Original<_IsTextureIDValid>(Offsets::IsTextureIDValid);
 		this->CreateNewTextureID = matsurface->Original<_CreateNewTextureID>(Offsets::CreateNewTextureID);
+    this->UnlockCursor = matsurface->Original<_UnlockCursor>(64);
 
 		auto PaintTraverseEx = matsurface->Original(Offsets::PaintTraverseEx);
 		this->StartDrawing = Memory::Read<_StartDrawing>(PaintTraverseEx + Offsets::StartDrawing);
@@ -191,6 +349,13 @@ bool Surface::Init() {
 		if (!Offsets::FinishDrawing) {
 			this->FinishDrawing = Surface::FinishDrawingFallback;
 		}
+
+    // I UNDERSTAND THIS SHIT!!!!
+    surface->matsurface->Hook(
+      LockCursor_Hook,
+      LockCursor,
+      65
+    );
 
 		// finding m_FontAmalgams pointer from CMatSystemSurface::GetFontName
 		using _FontManager = void*(*)();

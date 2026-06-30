@@ -76,7 +76,7 @@ bool EngineDemoPlayer::ShouldBlacklistCommand(const char *cmd) {
 	return false;
 }
 
-static Variable sar_demo_remove_broken("sar_demo_remove_broken", "1", "Whether to remove broken frames from demo playback\n");
+Variable sar_demo_remove_broken("sar_demo_remove_broken", "1", "Whether to remove broken frames from demo playback\n");
 
 static bool g_waitingForSession = false;
 ON_EVENT(SESSION_START) { g_waitingForSession = false; }
@@ -255,6 +255,7 @@ DETOUR(EngineDemoPlayer::StartPlayback, const char *filename, bool bAsTimeDemo) 
 			console->Print("Time:     %.3f\n", demo.playbackTime);
 			console->Print("Tickrate: %.3f\n", demo.Tickrate());
 			engine->demoplayer->levelName = demo.mapName;
+      engine->demoplayer->demoPlaybackTicks = demo.playbackTicks;
 			g_demoStart = demo.firstPositivePacketTick;
 			Renderer::segmentEndTick = demo.segmentTicks;
 			if (!sar_demo_remove_broken.GetBool()) Event::Trigger<Event::DEMO_START>({});
@@ -463,7 +464,11 @@ void InterpolateDemoCommand_Detour(void *thisptr, int slot, int target_tick, Dem
 	}
 }
 
+Variable demo_timescale;
+
 bool EngineDemoPlayer::Init() {
+  demo_timescale = Variable("demo_timescale");
+
 	auto disconnect = engine->cl->Original(Offsets::Disconnect);
 	auto demoplayer = Memory::DerefDeref<void *>(disconnect + Offsets::demoplayer);
 	if (this->s_ClientDemoPlayer = Interface::Create(demoplayer)) {

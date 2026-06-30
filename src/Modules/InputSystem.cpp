@@ -7,6 +7,8 @@
 #include "Offsets.hpp"
 #include "SAR.hpp"
 #include "Utils.hpp"
+#include "VGui.hpp"
+#include "Surface.hpp"
 
 REDECL(InputSystem::SleepUntilInput);
 #ifdef _WIN32
@@ -72,8 +74,10 @@ DETOUR_T(void, InputSystem::GetRawMouseAccumulators, int &x, int &y) {
 }
 #endif
 
+
 bool InputSystem::Init() {
 	this->g_InputSystem = Interface::Create(this->Name(), "InputSystemVersion001");
+  	this->g_InputStackSystem = Interface::Create(this->Name(), "InputStackSystemVersion001");
 	if (this->g_InputSystem) {
 		this->StringToButtonCode = this->g_InputSystem->Original<_StringToButtonCode>(Offsets::StringToButtonCode);
 
@@ -86,6 +90,12 @@ bool InputSystem::Init() {
 		this->SetCursorPosition = this->g_InputSystem->Original<_SetCursorPosition>(Offsets::SetCursorPosition);
 	}
 
+	if (this->g_InputStackSystem) {
+		this->SetCursorVisible = this->g_InputStackSystem->Original<_SetCursorVisible>(Offsets::SetCursorVisible);
+	}
+
+  // client->g_ClientDLL->Hook(Input)
+
 	auto unbind = Command("unbind");
 	if (!!unbind) {
 		auto cc_unbind_callback = (uintptr_t)unbind.ThisPtr()->m_pCommandCallback;
@@ -96,6 +106,7 @@ bool InputSystem::Init() {
 }
 void InputSystem::Shutdown() {
 	Interface::Delete(this->g_InputSystem);
+	Interface::Delete(this->g_InputStackSystem);
 }
 
 InputSystem *inputSystem;

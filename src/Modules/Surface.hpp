@@ -35,6 +35,8 @@ public:
 	using _DrawTexturedRect = int(__rescall *)(void *thisptr, int x0, int y0, int x1, int y1);
 	using _IsTextureIDValid = int(__rescall *)(void *thisptr, int id);
 	using _CreateNewTextureID = int(__rescall *)(void *thisptr, bool procedural);
+  using _DrawTexturedPolygon = int(__rescall *)(void* thisptr, int n, Vertex_t* pVertice, bool bClipVertices);
+	using _UnlockCursor = void(__rescall *)();
 
 	_GetFontTall GetFontTall = nullptr;
 	_DrawSetColor DrawSetColor = nullptr;
@@ -49,6 +51,7 @@ public:
 	_StartDrawing StartDrawing = nullptr;
 	_FinishDrawing FinishDrawing = nullptr;
 	_GetFontName GetFontName = nullptr;
+  _DrawTexturedPolygon DrawTexturedPolygon = nullptr;
 
 	_DrawGetTextureId DrawGetTextureId = nullptr;
 	_DrawGetTextureFile DrawGetTextureFile = nullptr;
@@ -59,6 +62,7 @@ public:
 	_DrawTexturedRect DrawTexturedRect = nullptr;
 	_IsTextureIDValid IsTextureIDValid = nullptr;
 	_CreateNewTextureID CreateNewTextureID = nullptr;
+	_UnlockCursor UnlockCursor = nullptr;
 
 	CUtlVector<CFontAmalgam> *m_FontAmalgams;
 
@@ -72,6 +76,8 @@ public:
 	void DrawRect(Color clr, int x0, int y0, int x1, int y1);
 	void DrawRect(Color clr, const Vector2<int> &v0, const Vector2<int> &v1);
 	void DrawRect(Color clr, const Bounds<int> &bounds);
+
+  void DrawTriangle(Color clr, Vector2<float> v0, Vector2<float> v1, Vector2<float> v2);
 
 	void DrawRectAndCenterTxt(Color clr, int x0, int y0, int x1, int y1, HFont font, Color fontClr, const char *fmt, ...);
 	void DrawRectAndCenterTxt(Color clr, const Vector2<int> &v0, const Vector2<int> &v1, HFont font, Color fontClr, const std::string &text);
@@ -90,6 +96,8 @@ public:
 
 	static int __rescall StartDrawingFallback(void *thisptr);
 	static int __cdecl FinishDrawingFallback();
+
+	DECL_DETOUR_T(void, LockCursor);
 
 	bool Init() override;
 	void Shutdown() override;

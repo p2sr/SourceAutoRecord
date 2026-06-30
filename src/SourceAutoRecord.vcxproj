@@ -63,7 +63,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include;$(SolutionDir)\lib\discord-rpc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\lib\SFML\include;$(SolutionDir)\lib\ffmpeg\include;$(SolutionDir)\lib\curl\include;$(SolutionDir)\lib\discord-rpc\include;$(SolutionDir)\lib\imgui</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>SFML_STATIC;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -112,6 +112,10 @@
     <_WildCardClInclude Include=".\**\*.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\lib\imgui\imgui.cpp" />
+    <ClCompile Include="..\lib\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\lib\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="@(_WildCardClCompile)" Exclude="Features\Pathmatch.cpp" />
     <ClInclude Include="@(_WildCardClInclude)" />
   </ItemGroup>

@@ -24,6 +24,7 @@
 #include "Interface.hpp"
 #include "Modules.hpp"
 #include "Variable.hpp"
+#include <imgui.h>
 
 SAR sar;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(SAR, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, sar);
@@ -89,9 +90,9 @@ bool SAR::Load(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerF
 			this->features->AddFeature<PlayerTrace>(&playerTrace);
 			this->features->AddFeature<Timeline>(&timeline);
 
+			this->modules->AddModule<Surface>(&surface);
 			this->modules->AddModule<InputSystem>(&inputSystem);
 			this->modules->AddModule<Scheme>(&scheme);
-			this->modules->AddModule<Surface>(&surface);
 			this->modules->AddModule<VGui>(&vgui);
 			this->modules->AddModule<Engine>(&engine);
 			this->modules->AddModule<Client>(&client);

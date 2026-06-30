@@ -43,6 +43,8 @@ OFFSET_DEFAULT(GetLevelNameShort, 53, 53)
 OFFSET_DEFAULT(GetLightForPoint, 1, 1)
 OFFSET_DEFAULT(GetPlayerInfo, 8, 8)
 OFFSET_DEFAULT(host_frametime_unbounded, 1, -1)
+OFFSET_DEFAULT(GetInputContext, 190, 25)
+OFFSET_DEFAULT(IN_KeyEvent, 20, 20)
 
 // CHLClient
 OFFSET_DEFAULT(GetAllClasses, 8, 8)
@@ -59,6 +61,9 @@ OFFSET_DEFAULT(LevelInitPreEntity, 5, 5)
 // CInputSystem
 OFFSET_EMPTY(KeyDown)
 OFFSET_EMPTY(KeyUp)
+
+// VGUI_Input005
+OFFSET_DEFAULT(UpdateButtonState, 87, 88)
 
 // ClientModeShared
 OFFSET_DEFAULT(CreateMove, 24, 25)
@@ -92,6 +97,8 @@ OFFSET_DEFAULT(DrawGetTextureSize, 38, 38)
 OFFSET_DEFAULT(DrawTexturedRect, 39, 39)
 OFFSET_DEFAULT(IsTextureIDValid, 40, 40)
 OFFSET_DEFAULT(CreateNewTextureID, 41, 41)
+OFFSET_DEFAULT(DrawTexturedPolygon, 104, 104)
+OFFSET_DEFAULT(UnlockCursor, 64, 64)
 
 // CInputSystem
 OFFSET_DEFAULT(StringToButtonCode, 31, 31)
@@ -100,6 +107,7 @@ OFFSET_DEFAULT(GetRawMouseAccumulators, 50, 52)
 OFFSET_DEFAULT(IsButtonDown, 14, 14)
 OFFSET_DEFAULT(GetCursorPosition, 45, 45)
 OFFSET_DEFAULT(SetCursorPosition, 38, 38)
+OFFSET_DEFAULT(SetCursorVisible, 11, 11)
 
 // CInput
 OFFSET_DEFAULT(GetButtonBits, 2, 2)
