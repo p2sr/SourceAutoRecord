@@ -684,6 +684,10 @@
 |sar_trace_export|cmd|sar_trace_export \<filename> [trace name] - Export trace data into a csv file.|
 |sar_trace_font_size|3.0|The size of text overlaid on recorded traces.|
 |sar_trace_hide|cmd|sar_trace_hide [trace name] - hide the trace with the given name|
+|sar_trace_offset|cmd|sar_trace_offset \<name> \<offset> - sets a tick offset for given trace.|
+|sar_trace_offset_clear|cmd|sar_trace_offset_clear - clears the offset of all the player traces.|
+|sar_trace_offset_sync|cmd|sar_trace_offset_sync - syncs all the hovered traces to the fastest trace.|
+|sar_trace_offset_sync_to|cmd|sar_trace_offset_sync_to [main trace] - syncs all the hovered traces to the given trace.|
 |sar_trace_override|1|Clears old trace when you start recording to it instead of recording on top of it.|
 |sar_trace_playback_rate|0|Playback rate of the trace bbox. Loops upon finishing.|
 |sar_trace_portal_opacity|100|Opacity of trace portal previews.|
