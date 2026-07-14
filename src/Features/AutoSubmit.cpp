@@ -438,9 +438,13 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 		while (!f.eof()) {
 			std::getline(f, base) && std::getline(f, key);
 			if (sar.game->Is(SourceGame_Portal2) && base == "board.portal2.sr") break;
-			if (sar.game->Is(SourceGame_PortalStoriesMel) && base == "melboard.portal2.sr") break;
+			if (sar.game->Is(SourceGame_PortalStoriesMel) && base == "mel.portal2.sr") break;
+			if (sar.game->Is(SourceGame_PortalStoriesMel) && base == "melboard.portal2.sr") {
+				base = "mel.portal2.sr";
+				break;
+			}
 			if (sar.game->Is(SourceGame_PortalStoriesMel) && base == "mel.board.portal2.sr") {
-				base = "melboard.portal2.sr";
+				base = "mel.portal2.sr";
 				break;
 			}
 			/* if we got here, no valid key */
