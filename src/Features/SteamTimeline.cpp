@@ -8,6 +8,7 @@
 /* Timeline can get cluttered up (especially at long recording lengths), nice to have an option to disable adding splits. */
 Variable sar_timeline_splits("sar_timeline_splits", "1", "Add split markers to the Steam Timeline.\n");
 Variable sar_timeline_show_completed("sar_timeline_show_completed", "0", "Only show speedrun starts and splits with matching finishes.\n");
+Variable sar_timeline_pb_only("sar_timeline_pb_only", "0", "Only add speedruns to the Steam Timeline when they are a personal best.\n");
 
 Timeline *timeline;
 
@@ -17,13 +18,18 @@ Timeline::Timeline() {
 
 static std::chrono::time_point<std::chrono::system_clock> g_speedrunStart;
 static std::vector<std::tuple<std::string, std::string, float>> g_pendingSplits;
+static float g_pendingPbFinishOffset;
+static std::string g_pendingPbFinishTime;
+static std::chrono::time_point<std::chrono::system_clock> g_pendingPbSpeedrunStart;
+static std::vector<std::tuple<std::string, std::string, float>> g_pendingPbSplits;
+static bool g_hasPendingPbRun = false;
 
 void Timeline::StartSpeedrun() {
 	if (!steam->hasLoaded) return;
 	g_speedrunStart = std::chrono::system_clock::now();
 	g_pendingSplits.clear();
 
-	if (sar_timeline_show_completed.GetBool()) return;
+	if (sar_timeline_show_completed.GetBool() || sar_timeline_pb_only.GetBool()) return;
 	steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, 0.0f, 0.0f, k_ETimelineEventClipPriority_Standard);
 }
 
@@ -31,7 +37,7 @@ void Timeline::Split(std::string name, std::string time) {
 	if (!steam->hasLoaded) return;
 	std::chrono::duration<float> currentOffset = std::chrono::system_clock::now() - g_speedrunStart;
 	if (sar_timeline_splits.GetBool()) {
-		if (sar_timeline_show_completed.GetBool()) {
+		if (sar_timeline_show_completed.GetBool() || sar_timeline_pb_only.GetBool()) {
 			g_pendingSplits.push_back({name, time, currentOffset.count()});
 		} else {
 			steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
@@ -57,6 +63,16 @@ ON_EVENT(SPEEDRUN_FINISH) {
 	auto fl_time = SpeedrunTimer::GetTotalTicks() * engine->GetIPT();
 	auto time = SpeedrunTimer::Format(fl_time);
 
+	if (sar_timeline_pb_only.GetBool()) {
+		g_pendingPbFinishOffset = offset.count();
+		g_pendingPbFinishTime = time;
+		g_pendingPbSpeedrunStart = g_speedrunStart;
+		g_pendingPbSplits = g_pendingSplits;
+		g_hasPendingPbRun = true;
+		g_pendingSplits.clear();
+		return;
+	}
+
 	if (sar_timeline_show_completed.GetBool()) {
 		steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, -offset.count(), 0.0f, k_ETimelineEventClipPriority_Standard);
 
@@ -80,8 +96,38 @@ ON_EVENT(SPEEDRUN_FINISH) {
 
 ON_EVENT(MAYBE_AUTOSUBMIT) {
 	if (!steam->hasLoaded) return;
-	if (!event.pb)
+	if (!event.pb) {
+		g_pendingPbSplits.clear();
+		g_hasPendingPbRun = false;
 		return;
+	}
+
+	if (sar_timeline_pb_only.GetBool() && g_hasPendingPbRun) {
+		std::chrono::duration<float> offset = std::chrono::system_clock::now() - g_pendingPbSpeedrunStart;
+		float finishOffset = g_pendingPbFinishOffset - offset.count();
+
+		steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, -offset.count(), 0.0f, k_ETimelineEventClipPriority_Standard);
+
+		for (const auto &[splitName, splitTime, splitOffset] : g_pendingPbSplits) {
+			steam->g_timeline->AddTimelineEvent(
+				"steam_bolt",
+				splitName.c_str(),
+				splitTime.c_str(),
+				0,
+				splitOffset - offset.count(),
+				0.0f,
+				k_ETimelineEventClipPriority_None);
+		}
+		g_pendingPbSplits.clear();
+
+		steam->g_timeline->SetTimelineStateDescription(("Speedrun " + g_pendingPbFinishTime).c_str(), -offset.count());
+		steam->g_timeline->ClearTimelineStateDescription(finishOffset);
+		steam->g_timeline->AddTimelineEvent("steam_crown", "Personal Best", SpeedrunTimer::Format(event.score / 100.0f).c_str(), 2, finishOffset, 0.0f, k_ETimelineEventClipPriority_Featured);
+		g_hasPendingPbRun = false;
+		return;
+	}
+	g_pendingPbSplits.clear();
+	g_hasPendingPbRun = false;
 
 	steam->g_timeline->AddTimelineEvent("steam_crown", "Personal Best", SpeedrunTimer::Format(event.score / 100.0f).c_str(), 2, 0.0f, 0.0f, k_ETimelineEventClipPriority_Featured);
 }
