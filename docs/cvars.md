@@ -640,8 +640,7 @@
 |sar_time_demo|cmd|sar_time_demo \<demo_name> - parses a demo and prints some information about it|
 |sar_time_demo_dev|0|Printing mode when using sar_time_demo.<br>0 = Default,<br>1 = Console commands,<br>2 = Console commands & packets.|
 |sar_time_demos|cmd|sar_time_demos \<demo_name> [demo_name2]... - parses multiple demos and prints the total sum of them|
-|sar_timeline_pb_only|0|Only add speedruns to the Steam Timeline when they are a personal best.|
-|sar_timeline_show_completed|0|Only show speedrun starts and splits with matching finishes.|
+|sar_timeline_show_completed|0|Only show speedrun starts and splits with matching finishes. Set to 2 to only show Personal Bests.|
 |sar_timeline_splits|1|Add split markers to the Steam Timeline.|
 |sar_timer_always_running|1|Timer will save current value when disconnecting.|
 |sar_timer_result|cmd|sar_timer_result - prints result of timer|

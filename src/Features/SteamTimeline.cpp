@@ -7,8 +7,7 @@
 
 /* Timeline can get cluttered up (especially at long recording lengths), nice to have an option to disable adding splits. */
 Variable sar_timeline_splits("sar_timeline_splits", "1", "Add split markers to the Steam Timeline.\n");
-Variable sar_timeline_show_completed("sar_timeline_show_completed", "0", "Only show speedrun starts and splits with matching finishes.\n");
-Variable sar_timeline_pb_only("sar_timeline_pb_only", "0", "Only add speedruns to the Steam Timeline when they are a personal best.\n");
+Variable sar_timeline_show_completed("sar_timeline_show_completed", "0", "Only show speedrun starts and splits with matching finishes. Set to 2 to only show Personal Bests.\n");
 
 Timeline *timeline;
 
@@ -29,7 +28,7 @@ void Timeline::StartSpeedrun() {
 	g_speedrunStart = std::chrono::system_clock::now();
 	g_pendingSplits.clear();
 
-	if (sar_timeline_show_completed.GetBool() || sar_timeline_pb_only.GetBool()) return;
+	if (sar_timeline_show_completed.GetBool()) return;
 	steam->g_timeline->AddTimelineEvent("steam_timer", "Speedrun Start", "", 1, 0.0f, 0.0f, k_ETimelineEventClipPriority_Standard);
 }
 
@@ -37,7 +36,7 @@ void Timeline::Split(std::string name, std::string time) {
 	if (!steam->hasLoaded) return;
 	std::chrono::duration<float> currentOffset = std::chrono::system_clock::now() - g_speedrunStart;
 	if (sar_timeline_splits.GetBool()) {
-		if (sar_timeline_show_completed.GetBool() || sar_timeline_pb_only.GetBool()) {
+		if (sar_timeline_show_completed.GetBool()) {
 			g_pendingSplits.push_back({name, time, currentOffset.count()});
 		} else {
 			steam->g_timeline->AddTimelineEvent("steam_bolt", name.c_str(), time.c_str(), 0, 0.0f, 0.0f, k_ETimelineEventClipPriority_None);
@@ -63,7 +62,7 @@ ON_EVENT(SPEEDRUN_FINISH) {
 	auto fl_time = SpeedrunTimer::GetTotalTicks() * engine->GetIPT();
 	auto time = SpeedrunTimer::Format(fl_time);
 
-	if (sar_timeline_pb_only.GetBool()) {
+	if (sar_timeline_show_completed.GetInt() >= 2) {
 		g_pendingPbFinishOffset = offset.count();
 		g_pendingPbFinishTime = time;
 		g_pendingPbSpeedrunStart = g_speedrunStart;
@@ -102,7 +101,7 @@ ON_EVENT(MAYBE_AUTOSUBMIT) {
 		return;
 	}
 
-	if (sar_timeline_pb_only.GetBool() && g_hasPendingPbRun) {
+	if (sar_timeline_show_completed.GetInt() >= 2 && g_hasPendingPbRun) {
 		std::chrono::duration<float> offset = std::chrono::system_clock::now() - g_pendingPbSpeedrunStart;
 		float finishOffset = g_pendingPbFinishOffset - offset.count();
 
