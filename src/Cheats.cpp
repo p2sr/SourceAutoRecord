@@ -155,6 +155,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_prevent_mat_snapshot_recompute 0");
 		CMD("sar_loads_uncap 0");
 		CMD("sar_loads_norender 0");
+		CMD("sar_loads_frametime 0");
 	} else if (!strcmp(preset, "sla")) {
 		if (!Game::IsSpeedrunMod() && ui_loadingscreen_transition_time.ThisPtr()) {
 			CMD("ui_loadingscreen_transition_time 0.0");
@@ -165,6 +166,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_prevent_mat_snapshot_recompute 1");
 		CMD("sar_loads_uncap 0");
 		CMD("sar_loads_norender 0");
+		CMD("sar_loads_frametime 0");
 	} else if (!strcmp(preset, "normal")) {
 		if (!Game::IsSpeedrunMod() && ui_loadingscreen_transition_time.ThisPtr()) {
 			CMD("ui_loadingscreen_transition_time 0.0");
@@ -175,6 +177,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_prevent_mat_snapshot_recompute 1");
 		CMD("sar_loads_uncap 1");
 		CMD("sar_loads_norender 0");
+		CMD("sar_loads_frametime 0");
 	} else if (!strcmp(preset, "full")) {
 		if (!Game::IsSpeedrunMod() && ui_loadingscreen_transition_time.ThisPtr()) {
 			CMD("ui_loadingscreen_transition_time 0.0");
@@ -185,6 +188,7 @@ CON_COMMAND_F_COMPLETION(sar_fast_load_preset, "sar_fast_load_preset <preset> - 
 		CMD("sar_prevent_mat_snapshot_recompute 1");
 		CMD("sar_loads_uncap 1");
 		CMD("sar_loads_norender 1");
+		CMD("sar_loads_frametime 1");
 	} else {
 		console->Print("Unknown preset %s!\n", preset);
 		console->Print(sar_fast_load_preset.ThisPtr()->m_pszHelpString);

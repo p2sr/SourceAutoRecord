@@ -338,6 +338,7 @@
 |sar_list_server_classes|cmd|sar_list_server_classes - lists all server classes|
 |sar_load_delay|0|Delay for this number of milliseconds at the end of a load.|
 |sar_loads_coop_dots|0|Toggles the loading screen dots during map transitions in coop.|
+|sar_loads_frametime|0|Force frametime to 1 tick per frame during loads. Can affect TAS playback.|
 |sar_loads_norender|0|Temporarily set mat_norendering to 1 during loads|
 |sar_loads_uncap|0|Temporarily set fps_max to 0 during loads|
 |sar_lphud|0|Enables or disables the portals display on screen.|

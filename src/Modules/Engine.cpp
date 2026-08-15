@@ -689,7 +689,7 @@ void Host_AccumulateTime_Detour(float dt) {
 
 	// HACK: Force frametime to equal a tick while loading
 	// Limits host_timescale effect on load times, faster loads
-	if (g_loadstate == LOADING && sar_loads_uncap.GetBool()) {
+	if (g_loadstate == LOADING && sar_loads_frametime.GetBool()) {
 		*host_frametime = *host_frametime_unbounded = engine->GetIPT();
 	}
 

@@ -40,3 +40,4 @@ extern Session *session;
 
 extern Variable sar_loads_uncap;
 extern Variable sar_loads_norender;
+extern Variable sar_loads_frametime;
