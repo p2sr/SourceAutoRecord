@@ -79,7 +79,8 @@ Game *Game::CreateNew() {
 
 	if (Utils::ICompare(modDir, Portal2::ModDir()) ||
 		Utils::ICompare(modDir, "cleaninggame") || 
-		Utils::ICompare(modDir, "divinity")) {
+		Utils::ICompare(modDir, "divinity") ||
+		Utils::ICompare(modDir, "aak")) {
 		// Technically The Cleaning Game is on 8928 but all sigs match 9568
 		void *engineClient = Interface::GetPtr(MODULE("engine"), "VEngineClient015");
 		if (engineClient) {
