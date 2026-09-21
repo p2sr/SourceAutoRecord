@@ -774,11 +774,13 @@ static int (*GlobalEntity_GetIndex)(const char *);
 static void (*GlobalEntity_SetFlags)(int, int);
 
 static void resetCoopProgress() {
-	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
-	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
-	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
-	GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
-	GlobalEntity_SetFlags(GlobalEntity_GetIndex("have_seen_dlc_tubes_reveal"), 0);
+	if (GlobalEntity_GetIndex && GlobalEntity_SetFlags) {
+		GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags0"), 0);
+		GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags1"), 0);
+		GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags2"), 0);
+		GlobalEntity_SetFlags(GlobalEntity_GetIndex("glados_spoken_flags3"), 0);
+		GlobalEntity_SetFlags(GlobalEntity_GetIndex("have_seen_dlc_tubes_reveal"), 0);
+	}
 	engine->ExecuteCommand("mp_mark_all_maps_incomplete", true);
 	engine->ExecuteCommand("mp_lock_all_taunts", true);
 }
@@ -890,8 +892,14 @@ bool Server::Init() {
 		this->g_ServerGameDLL->Hook(Server::ApplyGameSettings_Hook, Server::ApplyGameSettings, Offsets::ApplyGameSettings);
 	}
 
-	GlobalEntity_GetIndex = (int (*)(const char *))Memory::Scan(this->Name(), Offsets::GlobalEntity_GetIndex);
-	GlobalEntity_SetFlags = (void (*)(int, int))Memory::Scan(this->Name(), Offsets::GlobalEntity_SetFlags);
+	{
+		auto GlobalEntity_GetIndex_addr = Memory::Scan(this->Name(), Offsets::GlobalEntity_GetIndex);
+		auto GlobalEntity_SetFlags_addr = Memory::Scan(this->Name(), Offsets::GlobalEntity_SetFlags);
+		if (GlobalEntity_GetIndex_addr && GlobalEntity_SetFlags_addr) {
+			GlobalEntity_GetIndex = (int (*)(const char *))GlobalEntity_GetIndex_addr;
+			GlobalEntity_SetFlags = (void (*)(int, int))GlobalEntity_SetFlags_addr;
+		}
+	}
 
 	// Remove the limit on how quickly you can use 'say', and also hook it
 	Command::Hook("say", Server::say_callback_hook, Server::say_callback);
@@ -982,7 +990,10 @@ bool Server::Init() {
 	}
 
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
-		CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(Memory::Scan(this->Name(), Offsets::CreateViewModel, 1));
+		auto CreateViewModel_addr = Memory::Scan(this->Name(), Offsets::CreateViewModel, 1);
+		if (CreateViewModel_addr) {
+			CreateViewModel = Memory::Read<void(__rescall *)(void *, int)>(CreateViewModel_addr);
+		}
 	}
 
 	sv_cheats = Variable("sv_cheats");

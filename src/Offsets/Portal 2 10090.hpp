@@ -521,9 +521,9 @@ SIGSCAN_DEFAULT(RenderContextInit, "83 3D ? ? ? ? 00 0F 85 ? ? ? ? 56",
 
 // Server
 SIGSCAN_DEFAULT(GlobalEntity_GetIndex, "55 8B EC 51 8B 45 08 50 8D 4D FC 51 B9 ? ? ? ? E8 ? ? ? ? 66 8B 55 FC B8 FF FF 00 00",
-                                       "53 83 EC 18 8D 44 24 0E 83 EC 04 FF 74 24 24 68 ? ? ? ? 50 E8 ? ? ? ? 0F B7 4C 24 1A 83 C4 0C 66 83 F9 FF 74 35 8B 15 ? ? ? ? 89 D0")
+                                       "53 83 EC 18 8D 44 24 ? 83 EC 04") // "glados_spoken_flags0" xref[0] -> GlobalEntity_GetIndex call
 SIGSCAN_DEFAULT(GlobalEntity_SetFlags, "55 8B EC 80 3D ? ? ? ? 00 75 1F 8B 45 08 85 C0 78 18 3B 05 ? ? ? ? 7D 10 8B 4D 0C 8B 15 ? ? ? ? 8D 04 40 89 4C 82 08",
-                                       "80 3D ? ? ? ? 01 8B 44 24 04 74 1F 85 C0 78 1B 3B 05 ? ? ? ? 7D 13 8B 15 ? ? ? ? 8D 04 40")
+                                       "80 3D ? ? ? ? 01 8B 44 24 ? 74 ? 85 C0 78 ? 3B 05 ? ? ? ? 7D ? 8B 15 ? ? ? ? 8D 04 ? 8D 04 ? 8B 54 24 ? 89 50 ? C3 ? ? ? 8B") // ^ -> last call in block -> GlobalEntity_SetFlags
 SIGSCAN_DEFAULT(Host_Say, "55 8B EC 81 EC 30 02 00 00 56",
                           "55 89 E5 57 56 53 81 EC 4C 02 00 00 8B 5D ? 8B 45") // "\"%s<%i><%s><%s>\" say_team \"%s\"\n" xref -> Host_Say
 OFFSET_DEFAULT(Host_Say_insn, 0x335, 0x36E)
