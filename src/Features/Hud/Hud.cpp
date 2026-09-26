@@ -63,7 +63,7 @@ ON_EVENT(FRAME) {
 		engine->GetTicks(host, server, client);
 
 		float secs = (float)host / sar.game->Tickrate();
-		auto hue = std::fmodf(secs * 180, 360.f); // 2 secs for full cycle
+		auto hue = fmodf(secs * 180, 360.f); // 2 secs for full cycle
 		g_rainbow_color = Utils::HSVToRGB(hue, 50, 100);
 	}
 }
