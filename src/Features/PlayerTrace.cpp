@@ -16,6 +16,7 @@
 #include "Modules/Surface.hpp"
 
 #include <vector>
+#include <climits>
 
 PlayerTrace *playerTrace;
 
@@ -60,11 +61,11 @@ static int tickInternalToUser(int tick, const Trace &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
-		return tick + trace.startSessionTick;
+		return tick + trace.startSessionTick + trace.tasTickOffset;
 	case 3:
-		if (trace.startTasTick > 0) return tick + trace.startTasTick;
+		if (trace.startTasTick > 0) return tick + trace.startTasTick + trace.tasTickOffset;
 	default: // FALLTHROUGH
-		return tick;
+		return tick + trace.tasTickOffset;
 	}
 }
 
@@ -72,11 +73,11 @@ static int tickUserToInternal(int tick, const Trace &trace) {
 	if (tick == -1) return -1;
 	switch (sar_trace_draw_time.GetInt()) {
 	case 2:
-		return tick - trace.startSessionTick;
+		return tick - trace.startSessionTick - trace.tasTickOffset;
 	case 3:
-		if (trace.startTasTick > 0) return tick - trace.startTasTick;
+		if (trace.startTasTick > 0) return tick - trace.startTasTick - trace.tasTickOffset;
 	default: // FALLTHROUGH
-		return tick;
+		return tick - trace.tasTickOffset;
 	}
 }
 
@@ -136,6 +137,14 @@ void PlayerTrace::AddPoint(std::string trace_name, void *player, int slot, bool 
 	if (traces.count(trace_name) == 0) {
 		traces[trace_name] = Trace();
 		traces[trace_name].startSessionTick = session->GetTick();
+
+		auto it = playerTrace->tickOffsets.find(trace_name);
+
+		if (it != playerTrace->tickOffsets.end()) {
+			traces[trace_name].tasTickOffset = it->second;
+		} else {
+			playerTrace->tickOffsets[trace_name] = 0;
+		}
 	}
 
 	Trace &trace = traces[trace_name];
@@ -889,6 +898,34 @@ int PlayerTrace::GetTasTraceTick() {
 	return max_tas_tick;
 }
 
+void PlayerTrace::SetTickOffset(std::string &trace_name, int offset) {
+	playerTrace->tickOffsets[trace_name] = offset;
+}
+
+void PlayerTrace::ResetAllTraceOffsets() {
+	for (auto it = playerTrace->traces.begin(); it != playerTrace->traces.end(); ++it) {
+		Trace &trace = it->second;
+
+		trace.tasTickOffset = 0;
+	}
+
+	playerTrace->tickOffsets.clear();
+}
+
+std::vector<std::string> PlayerTrace::GetOffsetAutoComplete() {
+	std::vector<std::string> completions{};
+
+	for (auto it = playerTrace->tickOffsets.begin(); it != playerTrace->tickOffsets.end(); ++it) {
+		auto trace_name = it->first;
+
+		auto offsets = it->second;
+
+		completions.push_back(trace_name + " " + std::to_string(offsets));
+	}
+
+	return completions;
+}
+
 HUD_ELEMENT2(trace, "0", "Draws info about current trace bbox tick.\n", HudType_InGame | HudType_Paused) {
 	if (!sv_cheats.GetBool()) return;
 	playerTrace->DrawTraceHud(ctx);
@@ -1237,6 +1274,103 @@ CON_COMMAND(sar_trace_compare, "sar_trace_compare <trace 1> <trace 2> - compares
 			console->Print("Trace '%s' log dumped to '%s'\n", trace2Name, dump_2_name.c_str());
 		}
 	}
+}
+
+DECL_COMMAND_COMPLETION(sar_trace_offset) {
+	std::vector<std::string> completions = playerTrace->GetOffsetAutoComplete();
+
+    for (auto& comp : completions) {
+        if (items.size() == COMMAND_COMPLETION_MAXITEMS) {
+            break;
+        }
+
+        if (std::strlen(match) != std::strlen(cmd)) {
+            if (std::strstr(comp.c_str(), match)) {
+                items.push_back(comp);
+            }
+        } else {
+            items.push_back(comp);
+        }
+    }
+
+    FINISH_COMMAND_COMPLETION();
+}
+
+CON_COMMAND_F_COMPLETION(
+	sar_trace_offset,
+	"sar_trace_offset <name> <offset> - sets a tick offset for given trace.\n",
+	FCVAR_NONE,
+	AUTOCOMPLETION_FUNCTION(sar_trace_offset)) {
+	if (args.ArgC() < 3) {
+		return console->Print(sar_trace_offset.ThisPtr()->m_pszHelpString);
+	}
+
+	std::string trace_name = args[1];
+	auto offset = atoi(args[2]);
+	
+	auto trace = playerTrace->GetTrace(trace_name);
+
+	if (trace) {
+		trace->tasTickOffset = offset;
+	}
+
+	playerTrace->SetTickOffset(trace_name, offset);
+}
+
+CON_COMMAND(sar_trace_offset_sync, "sar_trace_offset_sync - syncs all the hovered traces to the fastest trace.\n") {
+	size_t pivot_tick = SIZE_MAX;
+
+
+	for (auto &h : hovers) {
+		pivot_tick = std::min(pivot_tick, h.tick);
+	}
+
+	if (pivot_tick == SIZE_MAX) {
+		return;
+	}
+
+	for (auto &h : hovers) {
+		auto trace = playerTrace->GetTrace(h.trace_name);
+
+		auto offset = pivot_tick - h.tick;
+
+		trace->tasTickOffset = offset;
+
+		playerTrace->SetTickOffset(h.trace_name, offset);
+	}
+}
+
+CON_COMMAND(sar_trace_offset_sync_to, "sar_trace_offset_sync_to [main trace] - syncs all the hovered traces to the given trace.\n") {
+	if (args.ArgC() < 2) {
+		return console->Print(sar_trace_offset_sync_to.ThisPtr()->m_pszHelpString);
+	}
+		
+	size_t pivot_tick = SIZE_MAX;
+
+	for (auto &h : hovers) {
+		if (args[1] == h.trace_name) {
+			pivot_tick = h.tick;
+			break;
+		}
+	}
+
+	if (pivot_tick == SIZE_MAX) {
+		return;
+	}
+
+	for (auto &h : hovers) {
+		auto trace = playerTrace->GetTrace(h.trace_name);
+
+		auto offset = pivot_tick - h.tick;
+
+		trace->tasTickOffset = offset;
+
+		playerTrace->SetTickOffset(h.trace_name, offset);
+	}
+}
+
+CON_COMMAND(sar_trace_offset_clear, "sar_trace_offset_clear - clears the offset of all the player traces.\n") {
+	playerTrace->ResetAllTraceOffsets();
 }
 
 void PlayerTrace::EnterLogScope(const char *name) {
