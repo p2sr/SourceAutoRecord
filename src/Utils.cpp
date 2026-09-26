@@ -1,5 +1,6 @@
 #include "Utils.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <cstdarg>
@@ -154,4 +155,22 @@ const char *Utils::ArgContinuation(const CCommand &args, int from) {
 	}
 
 	return text;
+}
+
+std::string Utils::trimL(const std::string &s) {
+	auto it = std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+	});
+	return std::string(it, s.end());
+}
+
+std::string Utils::trimR(const std::string &s) {
+	auto it = std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+	}).base();
+	return std::string(s.begin(), it);
+}
+
+std::string Utils::trim(const std::string &s) {
+	return trimR(trimL(s));
 }

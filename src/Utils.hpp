@@ -34,6 +34,9 @@ namespace Utils {
 	std::optional<Color> GetColor(const char *str, bool to_linear = false);
 	Color HSVToRGB(float H, float S, float V);
 	const char *ArgContinuation(const CCommand &args, int from);
+	std::string trimL(const std::string &s);
+	std::string trimR(const std::string &s);
+	std::string trim(const std::string &s);
 }  // namespace Utils
 
 #define REDECL(name) \

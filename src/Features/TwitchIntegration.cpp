@@ -11,7 +11,7 @@ Variable sar_twitch_chat_color("sar_twitch_chat_color", "255 255 255", "The colo
 
 TwitchConnection twitchConnection;
 
-ON_EVENT(PRE_TICK) {
+ON_EVENT(FRAME) {
     if (!sar_twitch_chat_enabled.GetBool() || strlen(sar_twitch_chat_channel.GetString()) == 0) {
         if (twitchConnection.IsConnected()) {
             twitchConnection.Disconnect();
@@ -27,8 +27,10 @@ ON_EVENT(PRE_TICK) {
     }
     auto twitchMsgs = twitchConnection.FetchNewMessages();
     for (auto msg : twitchMsgs) {
-        std::string message = msg.message;
+        std::string displayname = msg.displayname;
         std::string author = msg.username;
+        Color color = msg.color;
+        std::string message = msg.message;
         if (message.length() == 0 || author.length() == 0)
             continue;
         
@@ -67,13 +69,18 @@ ON_EVENT(PRE_TICK) {
             } else if (Utils::ICompare(author, sar_twitch_chat_channel.GetString())) {
                 networkManager.SendMessageToAll(message);
             } else {
-                networkManager.SendMessageToAll("(TTV) " + author + ": " + message);
+                networkManager.SendMessageToAll("(TTV) " + displayname + ": " + message);
             }
         } else {
             if (!(Utils::StartsWith(message.c_str(), "!") || Utils::ICompare(author, "nightbot") || Utils::ICompare(author, "streamelements"))) {
-                std::string message = msg.username + ": " + msg.message;
-                Color color = Utils::GetColor(sar_twitch_chat_color.GetString()).value_or(Color(255, 255, 255));
-                client->Chat(color, message.c_str());
+                color = networkManager.AdjustGhostColorForChat(color);
+                Color chatColor = Utils::GetColor(sar_twitch_chat_color.GetString()).value_or(Color(139, 88, 255));
+                std::vector<std::pair<Color, std::string>> components;
+                components.push_back({Color(169, 112, 255), "T "});
+                components.push_back({color, displayname});
+                components.push_back({chatColor, ": "});
+                components.push_back({chatColor, message});
+                client->MultiColorChat(components);
             }
         }
     }

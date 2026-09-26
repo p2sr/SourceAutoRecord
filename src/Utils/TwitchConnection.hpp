@@ -1,10 +1,14 @@
 #include "NetworkConnection.hpp"
 
+#include "Utils/SDK.hpp"
+
 #pragma once
 class TwitchConnection : protected NetworkConnection{
 public:
 	struct Message{
+		std::string displayname;
 		std::string username;
+		Color color;
 		std::string message;
 	};
 private:
@@ -21,4 +25,3 @@ public:
 	using NetworkConnection::IsConnected;
 	using NetworkConnection::SendData;
 };
-
