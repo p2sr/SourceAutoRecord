@@ -242,22 +242,15 @@ static const uint32_t g_vpkWhitelist[] = {
 	3250756559,  // portal2/pak01_dir.vpk
 	3017906285, // portal2_dlc1/pak01_dir.vpk
 	4033723710, // portal2_dlc2/pak01_dir.vpk
-	// Portal 2 (10090)
-	1937334792,	// portal2/pak01_dir.vpk
-	525202717,	// portal2_dlc1/pak01_dir.vpk
-	1882863719,	// portal2_dlc2/pak01_dir.vpk
 	// Portal 2 (9568)
-	4107509135, // /portal2/pak01_dir.vpk
 	2990582453,	// /portal2_german/pak01_dir.vpk
 	2395721311, // /portal2_french/pak01_dir.vpk
 	4278372139, // /portal2_spanish/pak01_dir.vpk
 	2760172248, // /portal2_russian/pak01_dir.vpk
-	2640587196, // /portal2_dlc1/pak01_dir.vpk
 	921300496,	// /portal2_dlc1_german/pak01_dir.vpk
 	3206151772, // /portal2_dlc1_french/pak01_dir.vpk
 	1845659002, // /portal2_dlc1_spanish/pak01_dir.vpk
 	859382253,	// /portal2_dlc1_russian/pak01_dir.vpk
-	498458753,	// /portal2_dlc2/pak01_dir.vpk
 	2331752929, // /portal 2/update/pak01_dir.vpk
 	// Portal 2 (4554)
 	865491316,	// /portal2/pak01_dir.vpk
