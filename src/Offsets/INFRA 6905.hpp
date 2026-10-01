@@ -4,6 +4,7 @@
 // CEngineClient
 OFFSET_WINDOWS(GetActiveSplitScreenPlayerSlot, 129)
 OFFSET_WINDOWS(GetSteamAPIContext, 179)
+OFFSET_WINDOWS(IsActiveApp, 189)
 OFFSET_WINDOWS(host_frametime, 87);
 
 // CHLClient

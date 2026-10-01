@@ -95,16 +95,16 @@ float Camera::GetCurrentPathTime() {
 //if in drive mode, checks if player wants to control the camera
 //for now it requires LMB input (as in demo drive mode)
 bool Camera::IsDriving() {
-	if (!engine->IsGameFocused() || vgui->IsUIVisible()) {
-		return false;
-	}
-
 	if (camera->controlType != Drive && camera->controlType != Follow) {
 		return false;
 	}
-
+	
 	bool userWantsToDrive = sar_cam_drive.GetInt() == 2 || inputSystem->IsKeyDown(ButtonCode_t::MOUSE_LEFT);
 	if (!userWantsToDrive) {
+		return false;
+	}
+
+	if (!engine->IsGameFocused() || vgui->IsUIVisible()) {
 		return false;
 	}
 
