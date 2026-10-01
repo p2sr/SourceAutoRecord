@@ -238,6 +238,10 @@ static std::thread g_sumthreads[NUM_FILE_SUM_THREADS];
 static std::map<std::string, uint32_t> g_filesums[NUM_FILE_SUM_THREADS];
 
 static const uint32_t g_vpkWhitelist[] = {
+	// Portal 2 (10097)
+	3250756559,  // portal2/pak01_dir.vpk
+	3017906285, // portal2_dlc1/pak01_dir.vpk
+	4033723710, // portal2_dlc2/pak01_dir.vpk
 	// Portal 2 (10090)
 	1937334792,	// portal2/pak01_dir.vpk
 	525202717,	// portal2_dlc1/pak01_dir.vpk
