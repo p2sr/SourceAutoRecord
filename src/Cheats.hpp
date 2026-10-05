@@ -26,6 +26,7 @@ extern Variable sar_disable_steam_pause;
 extern Variable sar_disable_no_focus_sleep;
 extern Variable sar_disable_progress_bar_update;
 extern Variable sar_prevent_mat_snapshot_recompute;
+extern Variable sar_prevent_steam_logon_disconnect;
 extern Variable sar_challenge_autostop;
 extern Variable sar_show_entinp;
 extern Variable sar_force_qc;

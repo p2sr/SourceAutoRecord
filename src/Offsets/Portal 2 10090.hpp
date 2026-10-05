@@ -474,6 +474,8 @@ SIGSCAN_DEFAULT(Cmd_ShutdownSig, "6A 00 68 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?",
                                  "C7 44 24 04 00 00 00 00 C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? C7")
 OFFSET_DEFAULT(Cmd_ShutdownOff, 3, 11)
 OFFSET_DEFAULT(Cmd_ShutdownOff2, 10, 10)
+SIGSCAN_DEFAULT(OnGSClientDenyHelper, "55 8B EC 83 EC 08 53 56 57 8B F1 E8 ? ? ? ? 8B",
+                                      "") // "Memory corruption detected" xref
 
 
 // EngineDemoRecorder

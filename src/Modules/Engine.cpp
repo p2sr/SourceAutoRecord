@@ -72,6 +72,7 @@ REDECL(Engine::Frame);
 REDECL(Engine::PurgeUnusedModels);
 REDECL(Engine::OnGameOverlayActivated);
 REDECL(Engine::OnGameOverlayActivatedBase);
+REDECL(Engine::OnGSClientDenyHelper);
 REDECL(Engine::ReadCustomData);
 REDECL(Engine::ReadConsoleCommand);
 REDECL(Engine::plugin_load_callback);
@@ -496,6 +497,20 @@ DETOUR_B(Engine::OnGameOverlayActivated, GameOverlayActivated_t *pGameOverlayAct
 	engine->shouldSuppressPause = sar_disable_steam_pause.GetBool() && pGameOverlayActivated->m_bActive;
 	return Engine::OnGameOverlayActivatedBase(thisptr, pGameOverlayActivated);
 }
+
+// CSteam3Server::OnGSClientDenyHelper
+// https://partner.steamgames.com/doc/api/steam_api#:~:text=k_EDenySteamConnectionError
+extern Hook g_OnGSClientDenyHelperHook;
+DETOUR_T(void, Engine::OnGSClientDenyHelper, void *cl, void *eDenyReason, const char *pchOptionalText) {
+	if (sar_prevent_steam_logon_disconnect.GetBool() && ((int)eDenyReason == 0xC)) {  // eDenyReason == k_EDenySteamConnectionError
+		return;
+	}
+
+	g_OnGSClientDenyHelperHook.Disable();
+	Engine::OnGSClientDenyHelper(thisptr, cl, eDenyReason, pchOptionalText);
+	g_OnGSClientDenyHelperHook.Enable();
+}
+Hook g_OnGSClientDenyHelperHook(&Engine::OnGSClientDenyHelper_Hook);
 
 DETOUR_COMMAND(Engine::plugin_load) {
 	// Prevent crash when trying to load SAR twice or try to find the module in
@@ -1105,6 +1120,9 @@ bool Engine::Init() {
 
 	Cmd_ExecuteCommand_Hook.SetFunc(g_Cmd_ExecuteCommand);
 	InsertCommand_Hook.SetFunc(g_InsertCommand);
+
+	Engine::OnGSClientDenyHelper = (decltype(Engine::OnGSClientDenyHelper))Memory::Scan(this->Name(), Offsets::OnGSClientDenyHelper);
+	g_OnGSClientDenyHelperHook.SetFunc(Engine::OnGSClientDenyHelper);
 
 	g_ReadCustomDataPatch = new Memory::Patch();
 	auto readCustomDataInjectAddr = Memory::Scan(this->Name(), Offsets::readCustomDataInjectSig, Offsets::readCustomDataInjectOff);
