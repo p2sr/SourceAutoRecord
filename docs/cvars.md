@@ -472,6 +472,7 @@
 |sar_pp_scan_set|cmd|sar_pp_scan_set - set the ppscan point where you're aiming.|
 |sar_prevent_ehm|0|Prevents Entity Handle Misinterpretation (EHM) from happening.|
 |sar_prevent_mat_snapshot_recompute|0|Shortens loading times by preventing state snapshot recomputation.|
+|sar_prevent_steam_logon_disconnect|0|Prevents the engine from kicking clients due to "No Steam logon".|
 |sar_print_stats|cmd|sar_print_stats - prints your statistics if those are loaded|
 |sar_quickhud_mode|0|Set the quickhud mode :<br>0: Default quickhud<br>1: Customizable quickhud<br>2: quickhud from .png|
 |sar_quickhud_set_texture|cmd|sar_quickhud_set_texture \<filepath> - enter the base name, it will search for \<filepath>1.png, \<filepath>2.png, \<filepath>3.png and \<filepath>4.png<br>ex: sar_quickhud_set_texture "crosshair/basic" looks for "crosshair/basic1.png", etc|
