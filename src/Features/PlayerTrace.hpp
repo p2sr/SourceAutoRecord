@@ -48,6 +48,7 @@ struct PortalLocations {
 struct Trace {
 	int startSessionTick;
 	int startTasTick;
+	int tasTickOffset = 0;
 	std::vector<Vector> positions[2];
 	std::vector<Vector> eyepos[2];
 	std::vector<QAngle> angles[2];
@@ -69,6 +70,8 @@ class PlayerTrace : public Feature {
 private:
 	// In order to arbitrarily number traces
 	std::map<std::string, Trace> traces;
+	// Universal map for trace tick offsets to be able to preserve them between trace recordings
+	std::unordered_map<std::string, int> tickOffsets;
 	std::string lastRecordedTrace;
 public:
 	PlayerTrace();
@@ -114,6 +117,11 @@ public:
 	void CheckTraceChanged();
 	// Get the current trace bbox tick for TAS stuff, or -1 if there isn't one
 	int GetTasTraceTick();
+	// Set tick offset globally
+	void SetTickOffset(std::string &trace_name, int offset);
+	// Reset all offsets
+	void ResetAllTraceOffsets();
+	std::vector<std::string> GetOffsetAutoComplete();
 
 	// Returns an identifier for the scope which should be passed to ExitLogScope
 	void EnterLogScope(const char *name);
