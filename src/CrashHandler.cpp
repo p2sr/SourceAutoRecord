@@ -180,9 +180,11 @@ void CrashHandler::Init() {
 
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, 0, true);
-	IMAGEHLP_MODULE info;
-	SymGetModuleInfo(GetCurrentProcess(), (DWORD)&Utils::GetSARPath, &info);
-	SymLoadModule(process, NULL, NULL, NULL, info.BaseOfImage, info.ImageSize);
+	IMAGEHLP_MODULE info = {};
+	info.SizeOfStruct = sizeof(info);
+	if (SymGetModuleInfo(process, (DWORD)&Utils::GetSARPath, &info)) {
+		SymLoadModule(process, NULL, NULL, NULL, info.BaseOfImage, info.ImageSize);
+	}
 }
 
 void CrashHandler::Cleanup() {
