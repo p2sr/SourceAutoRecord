@@ -19,11 +19,11 @@ ON_EVENT(FRAME) {
         return;
     }
     std::string channel = sar_twitch_chat_channel.GetString();
-    if (twitchConnection.GetChannel().compare(channel) != 0) {
-        twitchConnection.JoinChannel(channel);
-    }
-    if (!twitchConnection.IsConnected()) {
-        twitchConnection.JoinChannel(channel);
+    if (twitchConnection.GetChannel().compare(channel) != 0 || !twitchConnection.IsConnected()) {
+        if (!twitchConnection.JoinChannel(channel)) {
+            console->Print("Couldn't establish Twitch connection. Check your network settings.\n");
+            sar_twitch_chat_enabled.SetValue(false);
+        }
     }
     auto twitchMsgs = twitchConnection.FetchNewMessages();
     for (auto msg : twitchMsgs) {

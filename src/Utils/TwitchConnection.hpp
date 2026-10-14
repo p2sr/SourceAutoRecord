@@ -16,7 +16,7 @@ private:
 
 public:
 	TwitchConnection();
-	void JoinChannel(std::string name);
+	bool JoinChannel(std::string name);
 	std::string GetChannel() { return channel; }
 	std::vector<Message> FetchNewMessages();
 

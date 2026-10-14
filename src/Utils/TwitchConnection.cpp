@@ -111,12 +111,14 @@ TwitchConnection::TwitchConnection()
 
 }
 
-void TwitchConnection::JoinChannel(std::string name) {
+bool TwitchConnection::JoinChannel(std::string name) {
 	channel = name;
 
-	Connect();
-
-	SendData("CAP REQ :twitch.tv/tags twitch.tv/commands\nNICK justinfan8\nJOIN #" + channel + "\n");
+	if (Connect()) {
+		SendData("CAP REQ :twitch.tv/tags twitch.tv/commands\nNICK justinfan8\nJOIN #" + channel + "\n");
+		return true;
+	}
+	return false;
 }
 
 std::vector<TwitchConnection::Message> TwitchConnection::FetchNewMessages() {
