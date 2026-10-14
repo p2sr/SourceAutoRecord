@@ -165,7 +165,7 @@ static std::string request(CURL *curl, const char *url) {
 	return res == CURLE_OK && code == 200 ? response : "";
 }
 
-static bool getLatestVersion(CURL *curl, std::string *name, std::string *dlUrl, std::string *pdbUrl, Channel channel) {
+static bool getLatestVersion(CURL *curl, bool print, std::string *name, std::string *dlUrl, std::string *pdbUrl, Channel channel) {
 	// FIXME: This will fail if the API rate limit is saturated (bruteforcing? many instances?)
 	//        maybe cache the response for a couple minutes - AMJ 2024-04-25
 	json11::Json res;
@@ -173,6 +173,7 @@ static bool getLatestVersion(CURL *curl, std::string *name, std::string *dlUrl, 
 		std::string err;
 		res = json11::Json::parse(request(curl, "https://api.github.com/repos/p2sr/SourceAutoRecord/releases"), err);
 		if (err != "") {
+			if (print) THREAD_PRINT("Error retrieving pre-release version: %s\n", err.c_str());
 			return false;
 		}
 		try {
@@ -184,6 +185,7 @@ static bool getLatestVersion(CURL *curl, std::string *name, std::string *dlUrl, 
 		std::string err;
 		res = json11::Json::parse(request(curl, DL_SAR_HOST "/api/v1/latest/canary"), err);
 		if (err != "") {
+			if (print) THREAD_PRINT("Error retrieving canary version: %s\n", err.c_str());
 			return false;
 		}
 		try {
@@ -205,6 +207,7 @@ static bool getLatestVersion(CURL *curl, std::string *name, std::string *dlUrl, 
 		std::string err;
 		res = json11::Json::parse(request(curl, "https://api.github.com/repos/p2sr/SourceAutoRecord/releases/latest"), err);
 		if (err != "") {
+			if (print) THREAD_PRINT("Error retrieving latest version: %s\n", err.c_str());
 			return false;
 		}
 	}
@@ -264,7 +267,7 @@ void checkUpdate(CURL *curl, Channel channel, bool print, std::function<void(int
 
 	if (print) THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(curl, &name, &dlUrl, &pdbUrl, channel)) {
+	if (!getLatestVersion(curl, print, &name, &dlUrl, &pdbUrl, channel)) {
 		if (print) THREAD_PRINT("An error occurred retrieving latest version\n");
 		callback(1); // RC=1 indicates failure to check for updates
 		return;
@@ -287,7 +290,7 @@ void doUpdate(Channel channel, int successAction, bool force) {
 
 	THREAD_PRINT("Querying for latest version...\n");
 
-	if (!getLatestVersion(g_curl, &name, &dlUrl, &pdbUrl, channel)) {
+	if (!getLatestVersion(g_curl, true, &name, &dlUrl, &pdbUrl, channel)) {
 		THREAD_PRINT("An error occurred retrieving latest version\n");
 		return;
 	}
