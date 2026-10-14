@@ -50,7 +50,7 @@ static std::optional<SarVersion> getVersionComponents(const char *str) {
 		v.components[i++] = strtol(str, &end, 10);
 		str = end;
 
-		if (*str == '.') {
+		if (*str == '.' || *str == '-') {
 			++str;
 		} else {
 			break;
@@ -82,18 +82,8 @@ static bool isNewerVersion(std::string& verStr, bool print) {
 	auto version = getVersionComponents(verStr.c_str());
 	auto current = getVersionComponents(SAR_VERSION);
 
-	if ((version && version->canary) && (current && current->canary)) {
-		// For update from canary to canary, we just check if it's a different version
-		return strcmp(SAR_VERSION, verStr.c_str()) != 0;
-	}
-
-	if (!current || current->canary) {
-		// Otherwise, canary versions shouldn't downgrade to releases
-		if (print) THREAD_PRINT("Cannot compare version numbers on non-release version\n");
-		return false;
-	}
-
-	if (!version) {
+	if (!version || !current) {
+		if (print) THREAD_PRINT("Error comparing version numbers (\"%s\" vs. \"%s\")\n", SAR_VERSION, verStr.c_str());
 		return false;
 	}
 
