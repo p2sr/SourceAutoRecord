@@ -319,7 +319,7 @@
 |sar_ihud_clear_background|cmd|sar_ihud_clear_background|
 |sar_ihud_grid_padding|2|Padding between grid squares of input HUD.|
 |sar_ihud_grid_size|60|Grid square size of input HUD.|
-|sar_ihud_modify|cmd|sar_ihud_modify \<element\|all> [param=value]... - modifies parameters in given element.<br>Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold, msholdcount.|
+|sar_ihud_modify|cmd|sar_ihud_modify \<element\|all> [param=value]... - modifies parameters in given element.<br>Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold, msholdcount, countanchor.|
 |sar_ihud_preset|cmd|sar_ihud_preset \<preset> - modifies input hud based on given preset|
 |sar_ihud_set_background|cmd|sar_ihud_set_background \<path> \<grid x> \<grid y> \<grid w> \<grid h>|
 |sar_ihud_setpos|cmd|sar_ihud_setpos \<top\|center\|bottom\|y\|y%> \<left\|center\|right\|x\|x%> - automatically sets the position of input HUD.|

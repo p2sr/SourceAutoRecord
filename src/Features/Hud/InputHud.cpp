@@ -242,10 +242,24 @@ void InputHud::Paint(int slot) {
 					element.text.c_str()
 				);
 				if (element.pressCount[slot] > 1) {
-					surface->DrawRectAndCenterTxt(
-						Color(0, 0, 0, 0),
-						eX, eY + fontHeight, eX + eWidth, eY + eHeight + fontHeight,
-						font,
+					auto cW = surface->GetFontLength(font, "%d", element.pressCount[slot]);
+					int cX = eX + (eWidth  - cW) / 2;
+					int cY = eY + (eHeight + fontHeight) / 2;
+					if (element.countAnchor == 1) { // top left
+						cX = eX + 2;
+						cY = eY;
+					} else if (element.countAnchor == 2) { // top right
+						cX = eX + eWidth - cW - 2;
+						cY = eY;
+					} else if (element.countAnchor == 3) { // bottom left
+						cX = eX + 2;
+						cY = eY + eHeight - fontHeight;
+					} else if (element.countAnchor == 4) { // bottom right
+						cX = eX + eWidth - cW - 2;
+						cY = eY + eHeight - fontHeight;
+					}
+					surface->DrawTxt(font,
+						cX, cY,
 						active ? element.textHighlight : element.textColor,
 						Utils::ssprintf("%d", element.pressCount[slot]).c_str()
 					);
@@ -391,6 +405,8 @@ void InputHud::ModifyElementParam(std::string name, std::string parameter, std::
 		element->minHold = valueInt;
 	} else if (parameter.compare("msholdcount") == 0) {
 		element->msHoldCount = valueInt;
+	} else if (parameter.compare("countanchor") == 0) {
+		element->countAnchor = valueInt;
 	}
 }
 
@@ -518,7 +534,7 @@ bool InputHud::HasElement(const char* elementName) {
 }
 
 bool InputHud::IsValidParameter(const char* param) {
-	const char *validParams[] = {"enabled", "text", "font", "pos", "x", "y", "width", "height", "font", "background", "highlight", "textcolor", "texthighlight", "image", "highlightimage", "minhold", "msholdcount"};
+	const char *validParams[] = {"enabled", "text", "font", "pos", "x", "y", "width", "height", "font", "background", "highlight", "textcolor", "texthighlight", "image", "highlightimage", "minhold", "msholdcount", "countanchor"};
 	
 	for (const char *validParam : validParams) {
 		if (!strcmp(validParam, param)) {
@@ -626,7 +642,7 @@ DECL_COMMAND_COMPLETION(sar_ihud_modify) {
 
 CON_COMMAND_F_COMPLETION(sar_ihud_modify,
 	"sar_ihud_modify <element|all> [param=value]... - modifies parameters in given element.\n"
-    "Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold, msholdcount.\n",
+    "Params: enabled, text, pos, x, y, width, height, font, background, highlight, textcolor, texthighlight, image, highlightimage, minhold, msholdcount, countanchor.\n",
 	FCVAR_DONTRECORD, AUTOCOMPLETION_FUNCTION(sar_ihud_modify)
 ) {
 	if (args.ArgC() < 3) {

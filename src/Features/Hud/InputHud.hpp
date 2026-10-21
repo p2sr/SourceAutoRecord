@@ -41,6 +41,10 @@ private:
 		int highlightImageTextureId = -1;
 		int minHold = 0;
 		int msHoldCount = 0;
+		// 0 = second line
+		// 1 = top left, 2 = top right
+		// 3 = btm left, 4 = btm right
+		int countAnchor = 0;
 
 		// state
 		int pressedTick[2] = {-1, -1};
