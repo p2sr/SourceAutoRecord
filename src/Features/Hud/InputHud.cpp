@@ -213,25 +213,25 @@ void InputHud::Paint(int slot) {
 
 			bool active = down;
 			if (down) {
-				if (element.pressedTick == -1) {
-					element.pressedTick = tick;
+				if (element.pressedTick[slot] == -1) {
+					element.pressedTick[slot] = tick;
 				}
-				if (!element.lastDown) {
-					element.pressCount++;
-					element.lastPressTick = tick;
+				if (!element.lastDown[slot]) {
+					element.pressCount[slot]++;
+					element.lastPressTick[slot] = tick;
 				}
 			} else {
-				if (tick - element.pressedTick < element.minHold) {
+				if (tick - element.pressedTick[slot] < element.minHold) {
 					active = true;
-				} else if (element.pressedTick != -1) {
-					element.pressedTick = -1;
+				} else if (element.pressedTick[slot] != -1) {
+					element.pressedTick[slot] = -1;
 				}
-				if ((tick - element.lastPressTick) * engine->GetIPT() >= (element.msHoldCount / 1000.0f)) {
-					element.lastPressTick = -1;
-					element.pressCount = 0;
+				if ((tick - element.lastPressTick[slot]) * engine->GetIPT() >= (element.msHoldCount / 1000.0f)) {
+					element.lastPressTick[slot] = -1;
+					element.pressCount[slot] = 0;
 				}
 			}
-			element.lastDown = down;
+			element.lastDown[slot] = down;
 
 			if (element.imageTextureId == -1) {
 				surface->DrawRectAndCenterTxt(
@@ -241,13 +241,13 @@ void InputHud::Paint(int slot) {
 					active ? element.textHighlight : element.textColor,
 					element.text.c_str()
 				);
-				if (element.pressCount > 1) {
+				if (element.pressCount[slot] > 1) {
 					surface->DrawRectAndCenterTxt(
 						Color(0, 0, 0, 0),
 						eX, eY + fontHeight, eX + eWidth, eY + eHeight + fontHeight,
 						font,
 						active ? element.textHighlight : element.textColor,
-						Utils::ssprintf("%d", element.pressCount).c_str()
+						Utils::ssprintf("%d", element.pressCount[slot]).c_str()
 					);
 				}
 			} else {

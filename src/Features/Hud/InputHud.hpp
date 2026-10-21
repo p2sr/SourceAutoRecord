@@ -43,10 +43,10 @@ private:
 		int msHoldCount = 0;
 
 		// state
-		int pressedTick = -1;
-		int lastPressTick = -1;
-		bool lastDown = false;
-		int pressCount = 0;
+		int pressedTick[2] = {-1, -1};
+		int lastPressTick[2] = {-1, -1};
+		bool lastDown[2] = {false, false};
+		int pressCount[2] = {0, 0};
 	};
 
 	InputHudElement *GetElementByName(std::string name);
