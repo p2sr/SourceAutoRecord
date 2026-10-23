@@ -1,6 +1,8 @@
 #include "Offsets/Portal 2 10090.hpp"
 // Portal Stories: Mel, Reloaded
 
+OFFSET_WINDOWS(CacheUsedMaterials, 0) // texture preload fix only verified on Portal 2 10090
+
 OFFSET_LINUX(tickcount, 74)
 OFFSET_LINUX(interval_per_tick, 82)
 OFFSET_LINUX(demoplayer, 92)

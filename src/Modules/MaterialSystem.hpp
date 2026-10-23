@@ -26,8 +26,11 @@ public:
 	using _KeyValues_SetString = void(__rescall*)(void* thisptr, const char *key, const char *val);
 	_KeyValues_SetString KeyValues_SetString = nullptr;
 
+	using _AllowThreading = bool(__rescall *)(void *thisptr, bool bAllow, int nServiceThread);
+
 public:
 	DECL_DETOUR(UncacheUnusedMaterials, bool bRecomputeStateSnapshots);
+	DECL_DETOUR(CacheUsedMaterials);
 	DECL_DETOUR_T(IMaterial *, CreateMaterial, const char *pMaterialName, void *pVMTKeyValues);
 
 	bool Init() override;
