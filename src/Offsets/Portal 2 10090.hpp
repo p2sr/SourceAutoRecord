@@ -344,8 +344,8 @@ OFFSET_DEFAULT(snd_p, 98, 116)
 OFFSET_DEFAULT(snd_vol, 108, 122)
 OFFSET_DEFAULT(StartTouch, 102, 103)
 OFFSET_DEFAULT(UncacheUnusedMaterials, 77, 77)
-OFFSET_DEFAULT(CacheUsedMaterials, 78, 0)
-OFFSET_DEFAULT(AllowThreading, 135, 0)
+OFFSET_DEFAULT(CacheUsedMaterials, 78, 78) // client -> "LevelInitPreEntity - CacheUsedMaterials - Start" xref -> CPrecacheRegister::LevelInitPreEntity() -> following vtable call -> CMaterialSystem::CacheUsedMaterials
+OFFSET_DEFAULT(AllowThreading, 135, 135) // materialsystem -> "Queued Material System: ENABLED!\n" xref -> CMaterialSystem::AllowThreading -> vtable index
 OFFSET_DEFAULT(CreateMaterial, 81, 81)
 OFFSET_DEFAULT(FindMaterial, 82, 82)
 OFFSET_DEFAULT(CreateProceduralTexture, 91, 91)
