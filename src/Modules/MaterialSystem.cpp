@@ -45,6 +45,7 @@ public:
 };
 
 REDECL(MaterialSystem::UncacheUnusedMaterials);
+REDECL(MaterialSystem::CacheUsedMaterials);
 REDECL(MaterialSystem::CreateMaterial);
 
 DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
@@ -53,6 +54,22 @@ DETOUR(MaterialSystem::UncacheUnusedMaterials, bool bRecomputeStateSnapshots) {
 	auto result = MaterialSystem::UncacheUnusedMaterials(thisptr, bRecomputeStateSnapshotFixed);
 	auto stop = std::chrono::high_resolution_clock::now();
 	console->DevMsg("UncacheUnusedMaterials - %dms\n", std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count());
+	return result;
+}
+
+// CacheUsedMaterials ends in CTextureManager::ForceAllTexturesIntoHardware,
+// which queues a draw of every listed texture without referencing it. When an
+// entity released its last reference to a texture earlier in the frame (the
+// client runs this after every full update, which recreates all entities), the
+// render thread frees that texture before it gets to the preload draw, which
+// then crashes. `record` right after a load hits this on maps with a playing
+// movie screen (mp_coop_wall_5). Turning threading off for the call runs the
+// pending queue first, like the engine does around screenshots.
+DETOUR(MaterialSystem::CacheUsedMaterials) {
+	auto AllowThreading = materialSystem->materials->Original<_AllowThreading>(Offsets::AllowThreading);
+	bool allowed = AllowThreading(thisptr, false, 0);
+	auto result = MaterialSystem::CacheUsedMaterials(thisptr);
+	AllowThreading(thisptr, allowed, 0);
 	return result;
 }
 
@@ -88,6 +105,9 @@ bool MaterialSystem::Init() {
 	if (this->materials) {
 		this->materials->Hook(MaterialSystem::UncacheUnusedMaterials_Hook, MaterialSystem::UncacheUnusedMaterials, Offsets::UncacheUnusedMaterials);
 		this->materials->Hook(MaterialSystem::CreateMaterial_Hook, MaterialSystem::CreateMaterial, Offsets::CreateMaterial);
+		if (Offsets::CacheUsedMaterials) {
+			this->materials->Hook(MaterialSystem::CacheUsedMaterials_Hook, MaterialSystem::CacheUsedMaterials, Offsets::CacheUsedMaterials);
+		}
 
 		this->RemoveMaterial = this->materials->Original<_RemoveMaterial>(Offsets::RemoveMaterial);
 
