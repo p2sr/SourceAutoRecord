@@ -619,15 +619,20 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 	if (sar.game->Is(SourceGame_PortalStoriesMel)
 		&& client->GetChallengeStatus() == CMStatus::CHALLENGE
 		&& !engine->demoplayer->IsPlaying()
-		&& !strcmp(entName, "@transition_script")
-		&& !strcmp(inputName, "RunScriptCode")
-		&& !strcmp(parameter.ToString(), "TransitionFromMap()")) {
-		if (cm->EnsureStatsController()) {
-			// Replace Mel's map change with queued native completion, which also reaches our OnLevelEnd hook.
-			parameter.fieldType = FIELD_STRING;
-			parameter.iszVal = "EntFire(\"portal_stats_controller\", \"OnLevelEnd\", 5.0, 0);";
-		} else {
-			console->Print("Could not obtain portal_stats_controller; keeping Mel's original elevator transition.\n");
+		&& (!strcasecmp(className, "point_clientcommand") || !strcasecmp(className, "point_servercommand"))
+		&& !strcasecmp(inputName, "Command")) {
+		const char *command = parameter.ToString();
+		command += strspn(command, " \t\r\n");
+		if (!strncasecmp(command, "changelevel", 11) && strspn(command + 11, " \t\r\n") > 0) {
+			if (cm->EnsureStatsController()) {
+				// Complete after the map's fade, replacing the changelevel command entirely.
+				// RunScriptCode is a base entity input; queue OnLevelEnd so it reaches our hook.
+				inputName = "RunScriptCode";
+				parameter.fieldType = FIELD_STRING;
+				parameter.iszVal = "EntFire(\"portal_stats_controller\", \"OnLevelEnd\", 5.0, 0);";
+			} else {
+				console->Print("Could not obtain portal_stats_controller; keeping Mel's original elevator transition.\n");
+			}
 		}
 	}
 
