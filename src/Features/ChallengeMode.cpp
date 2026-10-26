@@ -15,6 +15,14 @@
 
 ChallengeMode *cm;
 
+bool ChallengeMode::EnsureStatsController() {
+	if (entityList->GetEntityInfoByClassName("portal_stats_controller")) {
+		return true;
+	}
+
+	return server->Create && server->Create("portal_stats_controller", {0, 0, 0}, {0, 0, 0}, nullptr);
+}
+
 void ChallengeMode::CreateNode() {
 	if (!sv_bonus_challenge.GetBool() || engine->demoplayer->IsPlaying()) {
 		return;

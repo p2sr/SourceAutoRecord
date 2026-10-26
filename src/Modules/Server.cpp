@@ -616,6 +616,21 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), entName, inputName, parameter.ToString());
 	}
 
+	if (sar.game->Is(SourceGame_PortalStoriesMel)
+		&& client->GetChallengeStatus() == CMStatus::CHALLENGE
+		&& !engine->demoplayer->IsPlaying()
+		&& !strcmp(entName, "@transition_script")
+		&& !strcmp(inputName, "RunScriptCode")
+		&& !strcmp(parameter.ToString(), "TransitionFromMap()")) {
+		if (cm->EnsureStatsController()) {
+			// Replace Mel's map change with queued native completion, which also reaches our OnLevelEnd hook.
+			parameter.fieldType = FIELD_STRING;
+			parameter.iszVal = "EntFire(\"portal_stats_controller\", \"OnLevelEnd\", 5.0, 0);";
+		} else {
+			console->Print("Could not obtain portal_stats_controller; keeping Mel's original elevator transition.\n");
+		}
+	}
+
 	// HACKHACK
 	// Deals with maps where you hit a normal transition trigger
 	if (!strcmp(className, "portal_stats_controller") && !strcmp(inputName, "OnLevelEnd") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {
