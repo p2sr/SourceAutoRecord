@@ -12,6 +12,7 @@ public:
 
 public:
 	void CreateNode();
+	bool EnsureStatsController();
 	void LoadNodes(SourceGameVersion version);
 };
 

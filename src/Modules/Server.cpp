@@ -616,6 +616,26 @@ static void __cdecl AcceptInput_Hook(void *thisptr, const char *inputName, void 
 		console->Print("%.4d %s.%s(%s)\n", session->GetTick(), entName, inputName, parameter.ToString());
 	}
 
+	if (sar.game->Is(SourceGame_PortalStoriesMel)
+		&& client->GetChallengeStatus() == CMStatus::CHALLENGE
+		&& !engine->demoplayer->IsPlaying()
+		&& (!strcasecmp(className, "point_clientcommand") || !strcasecmp(className, "point_servercommand"))
+		&& !strcasecmp(inputName, "Command")) {
+		const char *command = parameter.ToString();
+		command += strspn(command, " \t\r\n");
+		if (!strncasecmp(command, "changelevel", 11) && strspn(command + 11, " \t\r\n") > 0) {
+			if (cm->EnsureStatsController()) {
+				// Complete after the map's fade, replacing the changelevel command entirely.
+				// RunScriptCode is a base entity input; queue OnLevelEnd so it reaches our hook.
+				inputName = "RunScriptCode";
+				parameter.fieldType = FIELD_STRING;
+				parameter.iszVal = "EntFire(\"portal_stats_controller\", \"OnLevelEnd\", 5.0, 0);";
+			} else {
+				console->Print("Could not obtain portal_stats_controller; keeping Mel's original elevator transition.\n");
+			}
+		}
+	}
+
 	// HACKHACK
 	// Deals with maps where you hit a normal transition trigger
 	if (!strcmp(className, "portal_stats_controller") && !strcmp(inputName, "OnLevelEnd") && client->GetChallengeStatus() == CMStatus::CHALLENGE) {

@@ -9,6 +9,7 @@
 #	include <Windows.h>
 #	define strdup _strdup
 #	define strcasecmp _stricmp
+#	define strncasecmp _strnicmp
 #else
 #	include <unistd.h>
 #endif
