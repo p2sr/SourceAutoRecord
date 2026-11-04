@@ -1035,7 +1035,7 @@ Hook g_IsLevelCompleteHook(&Client::IsLevelComplete_Hook);
 
 #ifdef _WIN32
 // Outside a game, the leaderboard list reads each coop map's MP.complete title data bit
-// through this helper instead (its only caller). Linux inlines it, so this part is Windows only.
+// through this helper instead (its only caller).
 using _TitleDataGetBool = bool(__cdecl *)(void *field, void *titleData);
 static _TitleDataGetBool TitleDataGetBool;
 static bool g_unlockLeaderboardMapItem = false;
@@ -1063,6 +1063,44 @@ DETOUR_T(void, Client::SetChapterAndMapInfo, int chapter, int map, int a4, int c
 	g_unlockLeaderboardMapItem = false;
 }
 Hook g_SetChapterAndMapInfoHook(&Client::SetChapterAndMapInfo_Hook);
+#else
+// Linux inlines that helper into SetChapterAndMapInfo, which also takes its arguments in registers.
+// Both of its completion checks meet at "mov eax, [ebp]; mov ebx, [eax + 0x28]; test dl, dl" with
+// the result in dl and the map item in esi, so those first 6 bytes become a call to this stub. It
+// redoes them, then sets dl for maps of unlocked courses (the item's chapter is at +0x1A0).
+Memory::Patch *g_leaderboardMapItemPatch;
+
+extern "C" {
+__attribute__((used)) static bool LeaderboardMapItemUnlocked(int chapter) {
+	return chapter <= sar_unlocked_chapters.GetInt();
+}
+__attribute__((visibility("hidden"))) void LeaderboardMapItemComplete_Stub();
+}
+
+asm(R"(
+	.text
+	.globl LeaderboardMapItemComplete_Stub
+	.hidden LeaderboardMapItemComplete_Stub
+	.p2align 4
+LeaderboardMapItemComplete_Stub:
+	.intel_syntax noprefix
+	mov eax, [ebp]
+	mov ebx, [eax + 0x28]
+	test dl, dl
+	jnz 1f
+	push ebp
+	mov ebp, esp
+	and esp, -16
+	sub esp, 12
+	push dword ptr [esi + 0x1A0]
+	call LeaderboardMapItemUnlocked
+	mov esp, ebp
+	pop ebp
+	mov edx, eax
+1:
+	ret
+	.att_syntax prefix
+)");
 #endif
 
 bool Client::Init() {
@@ -1349,6 +1387,14 @@ bool Client::Init() {
 			g_SetChapterAndMapInfoHook.SetFunc(Client::SetChapterAndMapInfo);
 			g_TitleDataGetBoolHook.SetFunc(TitleDataGetBool);
 		}
+#else
+		g_leaderboardMapItemPatch = new Memory::Patch();
+		auto completeCheck = Memory::Scan(this->Name(), Offsets::LeaderboardMapItemComplete, Offsets::LeaderboardMapItemCompleteOff);
+		if (completeCheck) {
+			unsigned char callStub[6] = {0xE8, 0, 0, 0, 0, 0x90};
+			*(uint32_t *)(callStub + 1) = (uintptr_t)&LeaderboardMapItemComplete_Stub - (completeCheck + 5);
+			g_leaderboardMapItemPatch->Execute(completeCheck, callStub);
+		}
 #endif
 	}
 
@@ -1406,6 +1452,10 @@ void Client::Shutdown() {
 	g_drawPortalGhostPatch->Restore();
 	SAFE_DELETE(g_drawPortalPatch);
 	SAFE_DELETE(g_drawPortalGhostPatch);
+#ifndef _WIN32
+	if (g_leaderboardMapItemPatch) g_leaderboardMapItemPatch->Restore();
+	SAFE_DELETE(g_leaderboardMapItemPatch);
+#endif
 }
 
 Client *client;

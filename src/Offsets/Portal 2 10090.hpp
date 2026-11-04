@@ -446,6 +446,8 @@ SIGSCAN_DEFAULT(SetChapterAndMapInfo, "55 8B EC 81 EC 20 02 00 00 53 8B 5D 08 57
                                       "") // "#COOP_MAP_NAME_TR%d_MAP%d" xref -> CLeaderboardMapItem::SetChapterAndMapInfo (Linux: custom calling convention)
 SIGSCAN_DEFAULT(TitleDataGetBool, "55 8B EC 8B 45 08 8B 4D 0C 8B 11 8B 52 14 56 8B 70 0C 8B 40 04 57 50 FF D2",
                                   "") // CLeaderboardMapItem::SetChapterAndMapInfo -> "MP.complete.%s" title data bit read (Linux: inlined)
+SIGSCAN_DEFAULT(LeaderboardMapItemComplete, "", "83 E2 01 8B 2D ? ? ? ? 8B 45 00 8B 58 28 84 D2 74 ? FF B6 A8 01 00 00") // CLeaderboardMapItem::SetChapterAndMapInfo -> where its two completion checks meet
+OFFSET_DEFAULT(LeaderboardMapItemCompleteOff, 0, 9)
 
 SIGSCAN_DEFAULT(LoadingProgress__SetupControlStatesInstruction, "66 C7 86 ? ? ? ? ? ? EB", "66 89 83 ? ? ? ? E9 ? ? ? ? ? ? ? ? ? ? ? 85 F6") // "vgui/loading_screens/loadingscreen_coop" xref -> LoadingProgress::SetupControlStates -> m_bDrawProgress set to 0
 OFFSET_DEFAULT(LoadingProgress__SetupControlStatesBoolOffset, 7, 5)
