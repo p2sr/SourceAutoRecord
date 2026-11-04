@@ -85,7 +85,7 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 #endif
 );
 
-Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter. Also opens coop courses up to this number in the hub (as host) without marking them complete.\n");
+Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter. Also unlocks coop courses up to this number (hub doors as host, level select and challenge mode maps) without marking them complete.\n");
 
 Variable sar_portalcolor_enable("sar_portalcolor_enable", "0", "Enable custom portal colors.\n");
 Variable sar_portalcolor_sp_1("sar_portalcolor_sp_1", "64 160 255", "Portal color for Chell's left portal. r_portal_fastpath 0 required.\n");
@@ -130,6 +130,10 @@ REDECL(Client::ApplyMouse_Mid_Continue);
 #endif
 REDECL(Client::DrawPortal);
 REDECL(Client::GetChapterProgress);
+REDECL(Client::IsLevelComplete);
+#ifdef _WIN32
+REDECL(Client::SetChapterAndMapInfo);
+#endif
 
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
@@ -1014,6 +1018,53 @@ DETOUR(Client::GetChapterProgress) {
 }
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
 
+// The coop menus (hub level select, challenge mode and leaderboard lists) lock every map
+// neither player has completed. Treat the maps of courses 1 to N as completed there; the
+// real completion data is left alone.
+extern Hook g_IsLevelCompleteHook;
+DETOUR_T(bool, Client::IsLevelComplete, int branch, int level) {
+	if (branch >= 0 && branch < sar_unlocked_chapters.GetInt())
+		return true;
+
+	g_IsLevelCompleteHook.Disable();
+	auto ret = Client::IsLevelComplete(thisptr, branch, level);
+	g_IsLevelCompleteHook.Enable();
+	return ret;
+}
+Hook g_IsLevelCompleteHook(&Client::IsLevelComplete_Hook);
+
+#ifdef _WIN32
+// Outside a game, the leaderboard list reads each coop map's MP.complete title data bit
+// through this helper instead (its only caller). Linux inlines it, so this part is Windows only.
+using _TitleDataGetBool = bool(__cdecl *)(void *field, void *titleData);
+static _TitleDataGetBool TitleDataGetBool;
+static bool g_unlockLeaderboardMapItem = false;
+
+extern Hook g_TitleDataGetBoolHook;
+static bool __cdecl TitleDataGetBool_Hook(void *field, void *titleData) {
+	if (g_unlockLeaderboardMapItem)
+		return true;
+
+	g_TitleDataGetBoolHook.Disable();
+	auto ret = TitleDataGetBool(field, titleData);
+	g_TitleDataGetBoolHook.Enable();
+	return ret;
+}
+Hook g_TitleDataGetBoolHook(&TitleDataGetBool_Hook);
+
+extern Hook g_SetChapterAndMapInfoHook;
+DETOUR_T(void, Client::SetChapterAndMapInfo, int chapter, int map, int a4, int chapterProgress) {
+	g_unlockLeaderboardMapItem = chapter <= sar_unlocked_chapters.GetInt();
+
+	g_SetChapterAndMapInfoHook.Disable();
+	Client::SetChapterAndMapInfo(thisptr, chapter, map, a4, chapterProgress);
+	g_SetChapterAndMapInfoHook.Enable();
+
+	g_unlockLeaderboardMapItem = false;
+}
+Hook g_SetChapterAndMapInfoHook(&Client::SetChapterAndMapInfo_Hook);
+#endif
+
 bool Client::Init() {
 	bool readJmp = false;
 #ifdef _WIN32
@@ -1287,6 +1338,19 @@ bool Client::Init() {
 
 	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
 	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
+
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
+		Client::IsLevelComplete = (decltype(Client::IsLevelComplete))Memory::Scan(this->Name(), Offsets::IsLevelComplete);
+		g_IsLevelCompleteHook.SetFunc(Client::IsLevelComplete);
+#ifdef _WIN32
+		Client::SetChapterAndMapInfo = (decltype(Client::SetChapterAndMapInfo))Memory::Scan(this->Name(), Offsets::SetChapterAndMapInfo);
+		TitleDataGetBool = (_TitleDataGetBool)Memory::Scan(this->Name(), Offsets::TitleDataGetBool);
+		if (Client::SetChapterAndMapInfo && TitleDataGetBool) {
+			g_SetChapterAndMapInfoHook.SetFunc(Client::SetChapterAndMapInfo);
+			g_TitleDataGetBoolHook.SetFunc(TitleDataGetBool);
+		}
+#endif
+	}
 
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
