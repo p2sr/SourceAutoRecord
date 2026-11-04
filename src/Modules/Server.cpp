@@ -84,6 +84,7 @@ REDECL(Server::OnRemoveEntity);
 REDECL(Server::PlayerRunCommand);
 REDECL(Server::ViewPunch);
 REDECL(Server::IsInPVS);
+REDECL(Server::GetActiveBranches);
 REDECL(Server::ProcessMovement);
 REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
@@ -401,6 +402,24 @@ DETOUR_T(bool, Server::IsInPVS, void *info) {
 	return res;
 }
 Hook g_IsInPVS_Hook(&Server::IsInPVS_Hook);
+
+// The coop hub script opens courses 1 to N for N = GetHighestActiveBranch(), which is this
+// function. Raising N only opens the hub doors: the per-player completion data (and the
+// achievements the hub awards from it) is left alone.
+extern Hook g_GetActiveBranches_Hook;
+DETOUR(Server::GetActiveBranches) {
+	g_GetActiveBranches_Hook.Disable();
+	auto ret = Server::GetActiveBranches(thisptr);
+	g_GetActiveBranches_Hook.Enable();
+
+	if (sar_unlocked_chapters.GetInt() > -1) {
+		// 6 already opens every course; 7 means "all completed", don't fake that
+		ret = (std::max)(ret, (std::min)(sar_unlocked_chapters.GetInt(), 6));
+	}
+
+	return ret;
+}
+Hook g_GetActiveBranches_Hook(&Server::GetActiveBranches_Hook);
 
 ON_INIT {
 	NetMessage::RegisterHandler(
@@ -997,6 +1016,9 @@ bool Server::Init() {
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
 		Server::IsInPVS = (Server::_IsInPVS)Memory::Scan(this->Name(), Offsets::IsInPVS);
 		g_IsInPVS_Hook.SetFunc(IsInPVS);
+
+		Server::GetActiveBranches = (Server::_GetActiveBranches)Memory::Scan(this->Name(), Offsets::GetActiveBranches);
+		g_GetActiveBranches_Hook.SetFunc(GetActiveBranches);
 	}
 
 	NetMessage::RegisterHandler(RESET_COOP_PROGRESS_MESSAGE_TYPE, &netResetCoopProgress);

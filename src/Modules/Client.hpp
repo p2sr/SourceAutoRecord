@@ -200,6 +200,8 @@ public:
 
 extern Client *client;
 
+extern Variable sar_unlocked_chapters;
+
 extern Variable cl_showpos;
 extern Variable cl_sidespeed;
 extern Variable cl_backspeed;

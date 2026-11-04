@@ -88,6 +88,9 @@ public:
 	// CServerNetworkProperty::IsInPVS
 	DECL_DETOUR_T(bool, IsInPVS, void *info);
 
+	// CPortalMPGameRules::GetActiveBranches
+	DECL_DETOUR(GetActiveBranches);
+
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
 

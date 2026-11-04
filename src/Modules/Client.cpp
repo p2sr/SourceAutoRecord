@@ -85,7 +85,7 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 #endif
 );
 
-Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter.\n");
+Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter. Also opens coop courses up to this number in the hub (as host) without marking them complete.\n");
 
 Variable sar_portalcolor_enable("sar_portalcolor_enable", "0", "Enable custom portal colors.\n");
 Variable sar_portalcolor_sp_1("sar_portalcolor_sp_1", "64 160 255", "Portal color for Chell's left portal. r_portal_fastpath 0 required.\n");
