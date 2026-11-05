@@ -91,6 +91,9 @@ public:
 	// CPortalMPGameRules::GetActiveBranches
 	DECL_DETOUR(GetActiveBranches);
 
+	// CPortalMPGameRules::ClientCommand
+	DECL_DETOUR_T(bool, GameRulesClientCommand, void *edict, const CCommand &args);
+
 	// CGameMovement::ProcessMovement
 	DECL_DETOUR(ProcessMovement, void *pPlayer, CMoveData *pMove);
 
