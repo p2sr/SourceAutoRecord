@@ -134,7 +134,7 @@ bool MaterialSystem::Init() {
 void MaterialSystem::Shutdown() {
 	Interface::Delete(this->materials);
 
-	if (g_renderContextPatch->IsPatched()) {
+	if (g_renderContextPatch && g_renderContextPatch->IsPatched()) {
 		g_renderContextPatch->Restore();
 		RenderContextShutdown();
 		RenderContextInit();

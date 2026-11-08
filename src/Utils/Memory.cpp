@@ -297,7 +297,7 @@ bool Memory::Patch::Execute(uintptr_t location, unsigned char *bytes, size_t siz
 	return true;
 }
 bool Memory::Patch::Restore() {
-	if (!this || !this->location || !this->original) {
+	if (!this->location || !this->original) {
 		return false;
 	}
 	if (!this->isPatched) return true; // already restored

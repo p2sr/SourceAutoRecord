@@ -428,15 +428,10 @@ void Cheats::Shutdown() {
 	Variable::UnregisterAll();
 	Command::UnregisterAll();
 	
-	g_floorReportalPatch->Restore();
 	SAFE_DELETE(g_floorReportalPatch);
-	g_coopLoadingDotsPatch->Restore();
 	SAFE_DELETE(g_coopLoadingDotsPatch);
-	g_autoGrabPatchServer->Restore();
 	SAFE_DELETE(g_autoGrabPatchServer);
-	g_autoGrabPatchClient->Restore();
 	SAFE_DELETE(g_autoGrabPatchClient);
-	g_promoFlagsPatch->Restore();
 	SAFE_DELETE(g_promoFlagsPatch);
 }
 

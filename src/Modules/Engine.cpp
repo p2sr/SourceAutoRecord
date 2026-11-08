@@ -1226,15 +1226,12 @@ void Engine::Shutdown() {
 	Interface::Delete(this->g_physCollision);
 
 	// Reset to the offsets that were originally in the code
-	g_ReadCustomDataPatch->Restore();
-	g_ReadConsoleCommandPatch->Restore();
 	SAFE_DELETE(g_ReadCustomDataPatch)
 	SAFE_DELETE(g_ReadConsoleCommandPatch)
 
 #ifdef _WIN32
 	MH_UNHOOK(Engine::ParseSmoothingInfo_Mid);
 
-	this->demoSmootherPatch->Restore();
 	SAFE_DELETE(this->demoSmootherPatch)
 #endif
 	Command::Unhook("plugin_load", Engine::plugin_load_callback);

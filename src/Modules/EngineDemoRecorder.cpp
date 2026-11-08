@@ -441,9 +441,7 @@ bool EngineDemoRecorder::Init() {
 	return this->hasLoaded = this->s_ClientDemoRecorder;
 }
 void EngineDemoRecorder::Shutdown() {
-	g_StartupDemoFile_headerNamePatch->Restore();
 	SAFE_DELETE(g_StartupDemoFile_headerNamePatch);
-	g_StartupDemoHeader_headerNamePatch->Restore();
 	SAFE_DELETE(g_StartupDemoHeader_headerNamePatch);
 
 	Interface::Delete(this->s_ClientDemoRecorder);

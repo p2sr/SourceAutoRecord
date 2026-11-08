@@ -1074,15 +1074,10 @@ DETOUR_COMMAND(Server::say) {
 void Server::Shutdown() {
 	Command::Unhook("say", Server::say_callback);
 
-	g_aircontrolPatch->Restore();
 	SAFE_DELETE(g_aircontrolPatch);
-	g_portalsThruPortalsPatch->Restore();
 	SAFE_DELETE(g_portalsThruPortalsPatch);
-	g_chatPatch->Restore();
 	SAFE_DELETE(g_chatPatch);
-	g_unblockChatPatch->Restore();
 	SAFE_DELETE(g_unblockChatPatch);
-	g_checkStuckPatch->Restore();
 	SAFE_DELETE(g_checkStuckPatch);
 
 	Interface::Delete(this->gEntList);
