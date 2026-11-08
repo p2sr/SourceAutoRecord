@@ -1,7 +1,7 @@
 .PHONY: all clean cvars
 .FORCE:
 
-CXX=g++-10
+CXX=g++
 SDIR=src
 ODIR=obj
 
