@@ -85,7 +85,7 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 #endif
 );
 
-Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter. Also unlocks coop courses up to this number (hub doors as host, level select and challenge mode maps) without marking them complete.\n");
+Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter. Also unlocks the maps of coop courses up to this number in the challenge mode list.\n");
 
 Variable sar_portalcolor_enable("sar_portalcolor_enable", "0", "Enable custom portal colors.\n");
 Variable sar_portalcolor_sp_1("sar_portalcolor_sp_1", "64 160 255", "Portal color for Chell's left portal. r_portal_fastpath 0 required.\n");
@@ -130,8 +130,8 @@ REDECL(Client::ApplyMouse_Mid_Continue);
 #endif
 REDECL(Client::DrawPortal);
 REDECL(Client::GetChapterProgress);
-REDECL(Client::IsLevelComplete);
 #ifdef _WIN32
+REDECL(Client::IsLevelComplete);
 REDECL(Client::SetChapterAndMapInfo);
 #endif
 
@@ -1018,12 +1018,16 @@ DETOUR(Client::GetChapterProgress) {
 }
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
 
-// The coop menus (hub level select, challenge mode and leaderboard lists) lock every map
-// neither player has completed. Treat the maps of courses 1 to N as completed there; the
-// real completion data is left alone.
+// The coop challenge mode list locks every map neither player has completed. Treat the maps of
+// courses 1 to N as completed there; the real completion data is left alone.
+#ifdef _WIN32
+// SetChapterAndMapInfo checks completion through IsLevelComplete in game and through a title
+// data helper (its only caller) outside one. Both answer true while it runs for an unlocked course.
+static bool g_unlockLeaderboardMapItem = false;
+
 extern Hook g_IsLevelCompleteHook;
 DETOUR_T(bool, Client::IsLevelComplete, int branch, int level) {
-	if (branch >= 0 && branch < sar_unlocked_chapters.GetInt())
+	if (g_unlockLeaderboardMapItem)
 		return true;
 
 	g_IsLevelCompleteHook.Disable();
@@ -1033,12 +1037,8 @@ DETOUR_T(bool, Client::IsLevelComplete, int branch, int level) {
 }
 Hook g_IsLevelCompleteHook(&Client::IsLevelComplete_Hook);
 
-#ifdef _WIN32
-// Outside a game, the leaderboard list reads each coop map's MP.complete title data bit
-// through this helper instead (its only caller).
 using _TitleDataGetBool = bool(__cdecl *)(void *field, void *titleData);
 static _TitleDataGetBool TitleDataGetBool;
-static bool g_unlockLeaderboardMapItem = false;
 
 extern Hook g_TitleDataGetBoolHook;
 static bool __cdecl TitleDataGetBool_Hook(void *field, void *titleData) {
@@ -1378,12 +1378,12 @@ bool Client::Init() {
 	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
 
 	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
-		Client::IsLevelComplete = (decltype(Client::IsLevelComplete))Memory::Scan(this->Name(), Offsets::IsLevelComplete);
-		g_IsLevelCompleteHook.SetFunc(Client::IsLevelComplete);
 #ifdef _WIN32
+		Client::IsLevelComplete = (decltype(Client::IsLevelComplete))Memory::Scan(this->Name(), Offsets::IsLevelComplete);
 		Client::SetChapterAndMapInfo = (decltype(Client::SetChapterAndMapInfo))Memory::Scan(this->Name(), Offsets::SetChapterAndMapInfo);
 		TitleDataGetBool = (_TitleDataGetBool)Memory::Scan(this->Name(), Offsets::TitleDataGetBool);
-		if (Client::SetChapterAndMapInfo && TitleDataGetBool) {
+		if (Client::IsLevelComplete && Client::SetChapterAndMapInfo && TitleDataGetBool) {
+			g_IsLevelCompleteHook.SetFunc(Client::IsLevelComplete);
 			g_SetChapterAndMapInfoHook.SetFunc(Client::SetChapterAndMapInfo);
 			g_TitleDataGetBoolHook.SetFunc(TitleDataGetBool);
 		}

@@ -702,7 +702,7 @@
 |sar_twitch_chat_channel||The Twitch channel to connect to.|
 |sar_twitch_chat_color|255 255 255|The color of the Twitch chat messages.|
 |sar_twitch_chat_enabled|0|Enables Twitch chat integration. 2 enables spectator command !spec|
-|sar_unlocked_chapters|-1|Max unlocked chapter. Also unlocks coop courses up to this number (hub doors as host, level select and challenge mode maps) without marking them complete.|
+|sar_unlocked_chapters|-1|Max unlocked chapter. Also unlocks the maps of coop courses up to this number in the challenge mode list.|
 |sar_update|cmd|sar_update [release\|pre\|canary] [exit\|restart] [force] - update SAR to the latest version. If exit is given, exit the game upon successful update; if force is given, always re-install, even if it may be a downgrade|
 |sar_velocitygraph|0|Shows velocity graph.|
 |sar_velocitygraph_background|0|Background of velocity graph.|

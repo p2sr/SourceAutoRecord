@@ -101,10 +101,10 @@ public:
 	// CBaseModPanel::GetChapterProgress
 	DECL_DETOUR(GetChapterProgress);
 
+#ifdef _WIN32
 	// C_PortalMPGameRules::IsLevelComplete
 	DECL_DETOUR_T(bool, IsLevelComplete, int branch, int level);
 
-#ifdef _WIN32
 	// CLeaderboardMapItem::SetChapterAndMapInfo
 	DECL_DETOUR_T(void, SetChapterAndMapInfo, int chapter, int map, int a4, int chapterProgress);
 #endif
@@ -207,8 +207,6 @@ public:
 };
 
 extern Client *client;
-
-extern Variable sar_unlocked_chapters;
 
 extern Variable cl_showpos;
 extern Variable cl_sidespeed;

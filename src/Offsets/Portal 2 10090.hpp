@@ -441,7 +441,7 @@ SIGSCAN_EMPTY(FindElementSig)
 SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8",
                                     "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10")
 SIGSCAN_DEFAULT(IsLevelComplete, "55 8B EC 8B 55 0C 83 FA 0F 77 ? 8B 45 08 83 F8 05 77 ? C1 E0 04 03 C2 80 BC 08 B5 19 00 00 00",
-                                 "83 7C 24 0C 0F 8B 54 24 08 0F 97 C0 83 FA 05 0F 97 C1 08 C8 74") // "#COOP_MAP_NAME_TR%d_MAP%d" xref -> CLeaderboardMapItem::SetChapterAndMapInfo -> in-game branch -> C_PortalMPGameRules::IsLevelComplete
+                                 "") // "#COOP_MAP_NAME_TR%d_MAP%d" xref -> CLeaderboardMapItem::SetChapterAndMapInfo -> in-game branch -> C_PortalMPGameRules::IsLevelComplete (Linux: covered by LeaderboardMapItemComplete)
 SIGSCAN_DEFAULT(SetChapterAndMapInfo, "55 8B EC 81 EC 20 02 00 00 53 8B 5D 08 57 8B F9 89 7D F8 85 DB 0F 8E ? ? ? ? 8B 4D 0C 85 C9 0F 8E",
                                       "") // "#COOP_MAP_NAME_TR%d_MAP%d" xref -> CLeaderboardMapItem::SetChapterAndMapInfo (Linux: custom calling convention)
 SIGSCAN_DEFAULT(TitleDataGetBool, "55 8B EC 8B 45 08 8B 4D 0C 8B 11 8B 52 14 56 8B 70 0C 8B 40 04 57 50 FF D2",
@@ -564,13 +564,6 @@ SIGSCAN_DEFAULT(aircontrol_fling_speedSig, "0F 2F 25 ? ? ? ? F3 0F 11 45",
 OFFSET_DEFAULT(aircontrol_fling_speedOff, 3, 3)
 SIGSCAN_DEFAULT(FloorReportalBranch, "75 7D 8B 8E C0 04 00 00",
                                      "75 ? 8B 85 ? ? ? ? 8B 0D") // "Portal.open_red" xref(nothing after if) -> CProp_Portal::NewLocation -> first function call CPortal_Base2D::NewLocation -> 4x func call followed by test, [jnz]
-
-SIGSCAN_DEFAULT(GetActiveBranches, "55 8B EC 83 EC 14 53 56 BA 01 00 00 00 8D B1 ? ? ? ? 81 C1 ? ? ? ? 57 C6 45 FE 01",
-                                   "55 31 ED 57 56 53 83 EC 10 8B 44 24 24 C7 44 24 0C 01 00 00 00 C6 44 24 0B 01") // "Returns which branches should be available in the hub." xref -> GetHighestActiveBranch script binding -> CPortalMPGameRules::GetActiveBranches
-SIGSCAN_DEFAULT(ScriptIsLevelComplete, "55 8B EC 8B 0D ? ? ? ? 85 C9 75 04 32 C0 5D C3 8B 55 0C 83 FA 0F 77 ? 8B 45 08 83 F8 05 77 ? C1 E0 04 03 C1 03 C2 80 B8 C1 1B 00 00 00",
-                                       "8B 15 ? ? ? ? 85 D2 74 ? 83 7C 24 08 0F 0F 97 C0 83 7C 24 04 05 0F 97 C1 08 C8 74 ? C3 90 8B 44 24 04 C1 E0 04 01 C2 03 54 24 08 0F B6 82 BD 1B 00 00") // "Returns true if the level in the specified branch is completed by either player." xref -> IsLevelComplete script function
-SIGSCAN_DEFAULT(GameRulesClientCommand, "55 8B EC 51 53 56 8B 75 0C 83 3E 00 57 8B D9 BF ? ? ? ? 7E 06 8B BE 08 04 00 00 81 FF ? ? ? ? 74 12 68 ? ? ? ? 57 E8 ? ? ? ? 83 C4 08 85 C0 75 47 8B 06 83 F8 02",
-                                        "55 57 56 53 83 EC 2C 8B 6C 24 48 8B 5C 24 40 8B 74 24 44 8B 45 00 85 C0 7E 4E 8B BD 08 04 00 00 81 FF ? ? ? ? 75 68 83 F8 01 7E 28") // "coop_lobby_select_level" xref -> CPortalMPGameRules::ClientCommand
 
 SIGSCAN_DEFAULT(CPortal_Player__PollForUseEntity_CheckMP, "74 ? ? ? 8B 82 ? ? ? ? FF D0 84 C0 74 ? 8B CE",
                                                           "74 ? 8B 10 83 EC 0C 50 FF 92 88 00 00 00 83 C4 10 84 C0 ? ? ? ? ? ? ? ? ? ? ? ? ? 00 00") // "OnJump" xref -> CPortal_Player:PreThink -> CBasePlayer::PreThink -> CBasePlayer::ItemPreFrame -> CBasePlayer::PlayerUse -> CPortal_Player vtable offset -> CPortal_Player::PlayerUse -> Second function call from disassembly -> CPortal_Player::PollForUseEntity -> jz instruction
