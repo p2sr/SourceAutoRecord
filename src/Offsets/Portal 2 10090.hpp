@@ -178,8 +178,9 @@ OFFSET_DEFAULT(m_fSecondaryStaticAmount, 13588, 13556)
 OFFSET_DEFAULT(m_fOpenAmount, 13592, 13560)
 
 // IEngineVGuiInternal
-OFFSET_DEFAULT(IsGameUIVisible, 2, 2)
+OFFSET_DEFAULT(IsGameUIVisible, 2, 3)
 OFFSET_DEFAULT(Paint, 14, 15)
+OFFSET_DEFAULT(UpdateProgressBar, 26, 27)
 
 // IEngineTrace
 OFFSET_DEFAULT(TraceRay, 5, 5)

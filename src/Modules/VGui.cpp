@@ -138,7 +138,7 @@ bool VGui::Init() {
 		this->IsGameUIVisible = this->enginevgui->Original<_IsGameUIVisible>(Offsets::IsGameUIVisible);
 
 		this->enginevgui->Hook(VGui::Paint_Hook, VGui::Paint, Offsets::Paint);
-		this->enginevgui->Hook(VGui::UpdateProgressBar_Hook, VGui::UpdateProgressBar, Offsets::Paint + 12);
+		this->enginevgui->Hook(VGui::UpdateProgressBar_Hook, VGui::UpdateProgressBar, Offsets::UpdateProgressBar);
 
 		for (auto &hud : Hud::GetList()) {
 			if (hud->version == SourceGame_Unknown || sar.game->Is(hud->version)) {
