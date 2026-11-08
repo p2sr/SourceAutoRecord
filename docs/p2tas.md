@@ -431,5 +431,6 @@ Stops all tools that were activated in the past tickbulks. Optionally, it accept
   - Fix `use` tool by processing some tools during input fetching.
 - Version 10:
   - Fix tools giving slightly different results on Linux than on Windows by computing `sinf`, `cosf` etc. in double on both.
+  - Fix movement and view angle tools giving slightly different results on Windows than on Linux.
 
 Last updated during version 10 release.
