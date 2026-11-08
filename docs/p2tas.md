@@ -64,7 +64,7 @@ The parser is case-sensitive. All keywords are lowercase.
 
 The file should begin with a set of properties, defined in this exact order:
 
-- `version <number>` - required, defines a version of the script file, which affects how the script is processed and executed. Currently, the newest version is 7. For more details, see [Version History](#version-history).
+- `version <number>` - required, defines a version of the script file, which affects how the script is processed and executed. Currently, the newest version is 10. For more details, see [Version History](#version-history).
 - `start {next} {save/next/cm/now} <name>` - required, defines a starting point for the script file playback:
   - `next` - when used, playback doesn't start immediately after the given starting operation, but after the next game load. Usually used in full-game runs to run scripts right after level transition.
   - `save` - starts from a save with a given `name`.
@@ -429,5 +429,7 @@ Stops all tools that were activated in the past tickbulks. Optionally, it accept
   - Fix `decel` tool not respecting jump-based tools.
 - Version 9:
   - Fix `use` tool by processing some tools during input fetching.
+- Version 10:
+  - Fix tools giving slightly different results on Linux than on Windows by computing `sinf`, `cosf` etc. in double on both.
 
-Last updated during version 9 release.
+Last updated during version 10 release.

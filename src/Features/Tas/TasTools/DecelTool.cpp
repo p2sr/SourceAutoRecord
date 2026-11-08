@@ -25,8 +25,8 @@ void DecelTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 
 	// move the opposite side of your current velocity
 	float moveAngle = DEG2RAD(TasUtils::GetVelocityAngles(&playerInfo).x + 180 - playerInfo.angles.y + bulk.viewAnalog.x);
-	bulk.moveAnalog.x = -sinf(moveAngle);
-	bulk.moveAnalog.y = cosf(moveAngle);
+	bulk.moveAnalog.x = -tasSinf(moveAngle);
+	bulk.moveAnalog.y = tasCosf(moveAngle);
 
 	// make sure to move only the necessary amount
 	float maxAccel = autoStrafeTool[this->slot].GetMaxAccel(playerInfo, autoStrafeTool[this->slot].CreateWishDir(playerInfo,bulk.moveAnalog.y, bulk.moveAnalog.x));

@@ -111,7 +111,7 @@ bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInf
 	velocity.z = 0;
 
 	float targetAngleRad = DEG2RAD(params.strafeDir.angle);
-	Vector targetVel = Vector{cosf(targetAngleRad), sinf(targetAngleRad), 0} * params.strafeSpeed.speed;
+	Vector targetVel = Vector{tasCosf(targetAngleRad), tasSinf(targetAngleRad), 0} * params.strafeSpeed.speed;
 	Vector targetVelDelta = targetVel - velocity;
 
 	if (targetVelDelta == Vector(0, 0, 0)) {
@@ -129,12 +129,12 @@ bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInf
     }
 
 	Vector absoluteWishDir = targetVelDelta.Normalize();
-	float absoluteWishDirAngleRad = atan2f(absoluteWishDir.y, absoluteWishDir.x);
+	float absoluteWishDirAngleRad = tasAtan2f(absoluteWishDir.y, absoluteWishDir.x);
 
 	float playerYawRad = DEG2RAD(pInfo.angles.y);
 	float wishDirAngleRad = absoluteWishDirAngleRad - playerYawRad;
-	float forwardMove = cosf(wishDirAngleRad) * params.force;
-    float sideMove = -sinf(wishDirAngleRad) * params.force;
+	float forwardMove = tasCosf(wishDirAngleRad) * params.force;
+    float sideMove = -tasSinf(wishDirAngleRad) * params.force;
 
 	Vector velocityAfterMove = GetVelocityAfterMove(pInfo, forwardMove, sideMove);
 	Vector afterMoveDelta = velocityAfterMove - velocity;
@@ -149,8 +149,8 @@ bool AutoStrafeTool::TryReachTargetValues(TasFramebulk &bulk, const TasPlayerInf
 
 			wishDirAngleRad -= DEG2RAD(angleDelta);
 
-			forwardMove = cosf(wishDirAngleRad);
-			sideMove = -sinf(wishDirAngleRad);
+			forwardMove = tasCosf(wishDirAngleRad);
+			sideMove = -tasSinf(wishDirAngleRad);
 		}
 
 		float inputScale = targetVelDeltaLength / afterMoveDeltaLength;
@@ -177,7 +177,7 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
 		// Deal with airlock: we're strafing, so always try to maximize how much
 		// we can turn while also "trying" to meet speed criteria.
-		Vector absoluteMoveDirection{cosf(DEG2RAD(angle)), sinf(DEG2RAD(angle)), 0};
+		Vector absoluteMoveDirection{tasCosf(DEG2RAD(angle)), tasSinf(DEG2RAD(angle)), 0};
 
 		Vector airLockFactor = GetAirLockFactorVector(pInfo);
 		bool isDecelerating = pInfo.velocity.Length2D() > params.strafeSpeed.speed;
@@ -193,14 +193,14 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 			}
 		}
 
-		angle = RAD2DEG(atan2f(absoluteMoveDirection.y, absoluteMoveDirection.x));
+		angle = RAD2DEG(tasAtan2f(absoluteMoveDirection.y, absoluteMoveDirection.x));
 	}
 
 	// applying the calculated angle depending on the type of strafing
 	if (params.strafeType == AutoStrafeType::VECTORIAL) {
 		float moveAngle = DEG2RAD(angle - pInfo.angles.y);
-		fb.moveAnalog.x = -sinf(moveAngle);
-		fb.moveAnalog.y = cosf(moveAngle);
+		fb.moveAnalog.x = -tasSinf(moveAngle);
+		fb.moveAnalog.y = tasCosf(moveAngle);
 		if (pInfo.onSpeedPaint) fb.moveAnalog.x *= 2;
 	} else if (params.strafeType == AutoStrafeType::VECTORIAL_CAM) {
 		float lookAngle = this->shouldFollowLine ? params.strafeDir.angle : velAngle;
@@ -209,8 +209,8 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 			fb.viewAnalog.x = -(lookAngle - pInfo.angles.y);
 		}
 		float moveAngle = DEG2RAD(angle - lookAngle);
-		fb.moveAnalog.x = -sinf(moveAngle);
-		fb.moveAnalog.y = cosf(moveAngle);
+		fb.moveAnalog.x = -tasSinf(moveAngle);
+		fb.moveAnalog.y = tasCosf(moveAngle);
 		if (pInfo.onSpeedPaint) fb.moveAnalog.x *= 2;
 	} else if (params.strafeType == AutoStrafeType::ANGULAR) {
 		//	making sure moveAnalog is always at maximum value.
@@ -220,7 +220,7 @@ void AutoStrafeTool::ApplyStrafe(TasFramebulk &fb, const TasPlayerInfo &pInfo) {
 			fb.moveAnalog = fb.moveAnalog.Normalize();
 		}
 
-		float lookAngle = RAD2DEG(atan2f(fb.moveAnalog.x, fb.moveAnalog.y));
+		float lookAngle = RAD2DEG(tasAtan2f(fb.moveAnalog.x, fb.moveAnalog.y));
 
 		QAngle newAngle = {0, angle + lookAngle, 0};
 		fb.viewAnalog.x -= newAngle.y - pInfo.angles.y;
@@ -376,7 +376,7 @@ float AutoStrafeTool::GetFastestStrafeAngle(const TasPlayerInfo &player) {
 	// formula shamelessly taken from https://www.jwchong.com/hl/movement.html
 	float cosAng = (maxSpeed - maxAccel) / velocity.Length2D();
 
-	return acosf(fminf(fmaxf(cosAng,0.0f),1.0f));
+	return tasAcosf(fminf(fmaxf(cosAng,0.0f),1.0f));
 }
 
 // get horizontal angle of wishdir that would achieve given velocity
@@ -392,24 +392,24 @@ float AutoStrafeTool::GetTargetStrafeAngle(const TasPlayerInfo &player, float ta
 
 	// Assuming that it is possible to achieve a velocity of a given length,
 	// I'm using a law of cosines to get the right angle for acceleration.
-	float targetAngle = acosf(-(powOld(currentSpeed, 2) + powOld(maxAccel, 2) - powOld(targetSpeed, 2)) / (2.0f * currentSpeed * maxAccel)) * turningDir;
+	float targetAngle = tasAcosf(-(powOld(currentSpeed, 2) + powOld(maxAccel, 2) - powOld(targetSpeed, 2)) / (2.0f * currentSpeed * maxAccel)) * turningDir;
 
 	FOR_TAS_SCRIPT_VERSIONS_SINCE(8) {
 		// When we're affected by pitch, we should recalculate the angle a couple of times to ensure we can reach it.
 		if (params.noPitchLock && IsMovementAffectedByPitch(player)) {
 			float velAngle = TasUtils::GetVelocityAngles(&player).x;
 			float velToLocalAngleDeltaRad = DEG2RAD(player.angles.y) - DEG2RAD(velAngle);
-			float cosPitch = cosf(DEG2RAD(player.angles.x));
+			float cosPitch = tasCosf(DEG2RAD(player.angles.x));
 
 			const int maxIterations = 50;
 			for (int i = 0; i < maxIterations; i++) {
 				float correctAng = targetAngle - velToLocalAngleDeltaRad;
-				float forwardmove = cosf(correctAng) / cosPitch;
-				float sidemove = -sinf(correctAng);
+				float forwardmove = tasCosf(correctAng) / cosPitch;
+				float sidemove = -tasSinf(correctAng);
 
 				float scaledAccel = maxAccel / sqrtf(forwardmove * forwardmove + sidemove * sidemove);
 				float previousTargetAngle = targetAngle;
-				targetAngle = acosf(-(powf(currentSpeed, 2) + powf(scaledAccel, 2) - powf(targetSpeed, 2)) / (2.0f * currentSpeed * scaledAccel)) * turningDir;
+				targetAngle = tasAcosf(-(tasPowf(currentSpeed, 2) + tasPowf(scaledAccel, 2) - tasPowf(targetSpeed, 2)) / (2.0f * currentSpeed * scaledAccel)) * turningDir;
 
 				if (fabsf(previousTargetAngle - targetAngle) < 0.00001f) {
 					break;
@@ -439,7 +439,7 @@ float AutoStrafeTool::GetTurningStrafeAngle(const TasPlayerInfo &player) {
 	float cosAng = -maxAccel / velocity.Length2D();
 	if (cosAng < -1) cosAng = 0;
 
-	return acosf(cosAng);
+	return tasAcosf(cosAng);
 }
 
 // get horizontal angle of wishdir that would give the biggest turning angle while understrafing
@@ -455,7 +455,7 @@ float AutoStrafeTool::GetMaxUnderstrafeAngle(const TasPlayerInfo &player) {
 	float cosAng = maxSpeed / velocity.Length2D();
 	if (cosAng > 1) cosAng = 1;
 
-	return acosf(cosAng);
+	return tasAcosf(cosAng);
 }
 
 
@@ -491,8 +491,8 @@ float AutoStrafeTool::GetStrafeAngle(const TasPlayerInfo &player, AutoStrafePara
 		}
 
 		float correctAng = (DEG2RAD(velAngle) + ang) - DEG2RAD(player.angles.y);
-		float forwardmove = cosf(correctAng);
-		float sidemove = -sinf(correctAng);
+		float forwardmove = tasCosf(correctAng);
+		float sidemove = -tasSinf(correctAng);
 
 		FOR_TAS_SCRIPT_VERSIONS_UNTIL(2) {
 			forwardmove = cosOld(ang);
@@ -546,7 +546,7 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 		// line following is too "wobbly"
 		Vector velocity = GetGroundFrictionVelocity(pInfo);
 		float maxAccel = GetMaxAccel(pInfo, Vector(0, 1) * params.force);
-		float maxRotAng = RAD2DEG(asinf(maxAccel / velocity.Length2D()));
+		float maxRotAng = RAD2DEG(tasAsinf(maxAccel / velocity.Length2D()));
 
 		// scale maxRotAng by surfaceFriction and make it slightly bigger, as the range
 		// is often surpassed by slowfly and some other shit I wasn't able to isolate
@@ -616,8 +616,8 @@ int AutoStrafeTool::GetTurningDirection(const TasPlayerInfo &pInfo, float desAng
 
 				// we're on a speedcapped bumpy road, so we're making sure to detour into speedy highway
 				if (fabsf(pInfo.velocity.x) > speedCappedVel && fabsf(pInfo.velocity.y) > speedCappedVel) {
-					float velAngle = atan2f(pInfo.velocity.y, pInfo.velocity.x);
-					float cardinalDir = -sinf(velAngle * 4);
+					float velAngle = tasAtan2f(pInfo.velocity.y, pInfo.velocity.x);
+					float cardinalDir = -tasSinf(velAngle * 4);
 					cardinalDir = (cardinalDir == 0) ? turnDir : (cardinalDir / fabsf(cardinalDir));
 					turnDir = cardinalDir;
 					speedLockAvoided = true;
