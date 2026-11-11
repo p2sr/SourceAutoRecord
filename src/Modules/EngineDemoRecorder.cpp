@@ -505,6 +505,12 @@ ON_EVENT(PRE_TICK) {
 
 ON_EVENT(CM_FLAGS) {
 	if (engine->demorecorder->isRecordingDemo && event.end) {
+		// LPHUB autosubmit only supports singleplayer; capture eligibility before the session changes.
+		std::optional<int> portals;
+		if (!engine->IsCoop() && !sar.game->Is(SourceGame_Portal2_2011)) {
+			auto player = server->GetPlayer(1);
+			if (player) portals = server->GetPortals(player);
+		}
 		char data[2] = {0x06, (char)event.slot};
 		engine->demorecorder->RecordData(data, sizeof data);
 
@@ -550,7 +556,7 @@ ON_EVENT(CM_FLAGS) {
 					}
 				}
 
-				AutoSubmit::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb);
+				AutoSubmit::FinishRun(event.time, demoFile.c_str(), rename_if_pb, replay_append_if_pb, portals);
 			}
 		});
 	}

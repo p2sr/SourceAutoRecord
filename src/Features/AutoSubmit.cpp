@@ -28,6 +28,11 @@
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
 #define API_KEY_FILE "autosubmit.key"
 #define OLD_API_KEY_FILE "autosubmit_key.txt"
+// TODO: Adjust these API paths and payloads when LPHUB's API is available.
+#define LPHUB_API_BASE "https://lp.portal2.sr"
+#define LPHUB_VALIDATE_PATH "/validate-user"
+#define LPHUB_PB_PATH "/current-pb"
+#define LPHUB_SUBMIT_PATH "/auto-submit"
 
 bool AutoSubmit::g_cheated = false;
 int AutoSubmit::g_paused = 0;
@@ -59,6 +64,7 @@ ON_EVENT(PRE_TICK) {
 
 static std::string g_api_base;
 static std::string g_api_key;
+static std::string g_lphub_key;
 static bool g_key_valid;
 static CURL *g_curl;
 static CURL *g_curl_search;
@@ -80,11 +86,11 @@ static bool ensureCurlReady(CURL **curl) {
 	return true;
 }
 
-static std::optional<std::string> request(CURL *curl, std::string url) {
+static std::optional<std::string> request(CURL *curl, std::string url, long timeout = 30) {
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
 
 #ifdef UNSAFELY_IGNORE_CERTIFICATE_ERROR
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -289,46 +295,47 @@ const std::vector<json11::Json>& AutoSubmit::GetTimes() {
 	return g_times;
 }
 
-static void submitTime(int score, std::string demopath, bool coop, std::string map_id, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
-	auto score_str = std::to_string(score);
+static bool renameDemo(std::string &path, const std::string &target, const std::optional<std::string> &replay_suffix) {
+	std::error_code error;
+	std::filesystem::rename(path, target, error);
+	if (error) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "Couldn't rename demo: " + error.message());
+		return false;
+	}
+	path = target;
+	if (replay_suffix) {
+		Scheduler::OnMainThread([suffix = *replay_suffix]() {
+			engine->demoplayer->replayName += suffix;
+		});
+	}
+	return true;
+}
 
+enum class PbOutcome { Unknown, NotPb, Pb };
+
+static PbOutcome checkTimePb(int score, const std::string &map_id) {
 	if (!g_key_valid) {
-		if (rename_if_pb) {
-			std::filesystem::rename(demopath, *rename_if_pb);
-		}
-		if (replay_append_if_pb) {
-			engine->demoplayer->replayName += *replay_append_if_pb;
-		}
-		return;
+		return PbOutcome::Unknown;
 	}
 
 	auto cur_pb = getCurrentPbScore(map_id);
 	if (cur_pb) {
 		if (*cur_pb > -1 && score >= *cur_pb) {
 			THREAD_PRINT("Not PB; not submitting.\n");
-			Scheduler::OnMainThread([=]() {
-				Event::Trigger<Event::MAYBE_AUTOSUBMIT>({score, coop, false});
-			});
-			return;
+			return PbOutcome::NotPb;
 		}
-	}
-
-	// If we couldn't detect if this run PBd, rename the demo anyway to be
-	// safe
-
-	if (rename_if_pb) {
-		std::filesystem::rename(demopath, *rename_if_pb);
-		demopath = *rename_if_pb;
-	}
-
-	if (replay_append_if_pb) {
-		engine->demoplayer->replayName += *replay_append_if_pb;
 	}
 
 	if (!cur_pb) {
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time - couldn't fetch PB");
-		return;
+		return PbOutcome::Unknown;
 	}
+
+	return PbOutcome::Pb;
+}
+
+static void submitTime(int score, const std::string &demopath, bool coop, const std::string &map_id) {
+	auto score_str = std::to_string(score);
 
 	if (!ensureCurlReady(&g_curl)) {
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "An error occurred submitting this time - couldn't ready CURL");
@@ -377,6 +384,90 @@ static void submitTime(int score, std::string demopath, bool coop, std::string m
 	}
 }
 
+static PbOutcome submitLP(int score, const std::string &demopath, const std::string &key, const std::string &map_name, int time_taken) {
+	if (!sar.game->Is(SourceGame_Portal2) && !sar.game->Is(SourceGame_PortalStoriesMel)) return PbOutcome::Unknown;
+	if (key.empty()) return PbOutcome::Unknown;
+	CURL *curl = curl_easy_init();
+	if (!curl) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't ready CURL");
+		return PbOutcome::Unknown;
+	}
+	std::string authorization = "Authorization: " + key;
+	curl_slist *headers = curl_slist_append(nullptr, authorization.c_str());
+	if (!headers) {
+		curl_easy_cleanup(curl);
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't set authorization header");
+		return PbOutcome::Unknown;
+	}
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	const std::string base = std::string(LPHUB_API_BASE) + "/api/v1";
+	auto lphubRequest = [&](const char *path) -> std::optional<json11::Json> {
+		auto response = request(curl, base + path, 90);
+		if (!response) {
+			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: didn't get a response");
+			return {};
+		}
+		std::string err;
+		auto json = json11::Json::parse(*response, err);
+		if (!err.empty() || !json["success"].is_bool()) {
+			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: invalid response");
+			return {};
+		}
+		if (!json["success"].bool_value()) {
+			auto message = json["message"].string_value();
+			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: " + (message.empty() ? "request failed" : message));
+			return {};
+		}
+		return json;
+	};
+	auto post = [&](const char *path, bool upload, bool map_check = false) {
+		if (map_check) {
+			json11::Json payload = json11::Json::object{
+				{"map_name", map_name},
+				{"portal_count", score},
+				{"time_taken", time_taken}, // Challenge time in ticks.
+			};
+			std::string body = payload.dump();
+			curl_slist *json_headers = curl_slist_append(nullptr, authorization.c_str());
+			json_headers = curl_slist_append(json_headers, "Content-Type: application/json");
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, json_headers);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+			auto response = lphubRequest(path);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+			curl_slist_free_all(json_headers);
+			return response;
+		}
+		curl_mime *form = curl_mime_init(curl);
+		if (upload) {
+			auto field = curl_mime_addpart(form);
+			curl_mime_name(field, "host_demo");
+			curl_mime_filedata(field, demopath.c_str());
+		}
+		curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
+		auto response = lphubRequest(path);
+		curl_mime_free(form);
+		return response;
+	};
+	auto validated = post(LPHUB_VALIDATE_PATH, false);
+	auto pb = validated ? post(LPHUB_PB_PATH, false, true) : std::nullopt;
+	PbOutcome outcome = PbOutcome::Unknown;
+	if (pb && !(*pb)["data"]["is_personal_best"].is_bool()) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't fetch PB");
+	} else if (pb && !(*pb)["data"]["is_personal_best"].bool_value()) {
+		outcome = PbOutcome::NotPb;
+		THREAD_PRINT("LPHUB: not PB; not submitting.\n");
+	} else if (pb) {
+		outcome = PbOutcome::Pb;
+		if (post(LPHUB_SUBMIT_PATH, true)) {
+			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "Successfully submitted to LPHUB!");
+		}
+	}
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	return outcome;
+}
+
 static void convertOldApiKeys() {
 	auto old_filepath = fileSystem->FindFileSomewhere(OLD_API_KEY_FILE);
 	if (!old_filepath.has_value())
@@ -420,6 +511,10 @@ static void convertOldApiKeys() {
 
 void AutoSubmit::LoadApiKey(bool output_nonexist) {
 	convertOldApiKeys();
+	if (g_worker.joinable())
+	    g_worker.join();
+	g_lphub_key.clear();
+	g_key_valid = false;
 
 	auto filepath = fileSystem->FindFileSomewhere(API_KEY_FILE);
 	if (!filepath.has_value()) {
@@ -427,6 +522,20 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 			console->Print("API key file " API_KEY_FILE " does not exist!\n");
 		}
 		return;
+	}
+
+	// Read the LPHUB entry separately so the time-board parser stays unchanged.
+	{
+		std::ifstream f(filepath.value());
+		std::string host, hash;
+		while (std::getline(f, host) && std::getline(f, hash)) {
+			if (!host.empty() && host.back() == '\r') host.pop_back();
+			if (host == "lp.portal2.sr") {
+				hash.erase(std::remove_if(hash.begin(), hash.end(), [](unsigned char c) { return std::isspace(c); }), hash.end());
+				g_lphub_key = hash;
+				break;
+			}
+		}
 	}
 
 	std::string base;
@@ -587,7 +696,7 @@ CON_COMMAND_COMPLETION(sar_speedrun_get_mtriggers_map, "sar_speedrun_get_mtrigge
 }
 
 
-void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb) {
+void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional<std::string> rename_if_pb, std::optional<std::string> replay_append_if_pb, std::optional<int> portals) {
 	if (AutoSubmit::g_cheated) {
 		console->Print("Cheated; not autosubmitting\n");
 		return;
@@ -605,24 +714,44 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	return;
 #endif
 
-	auto it = g_map_ids.find(engine->GetCurrentMapName());
-	if (it == g_map_ids.end()) {
-		console->Print("Unknown map; not autosubmitting\n");
-		if (rename_if_pb) {
-			std::filesystem::rename(demopath, *rename_if_pb);
-		}
-		if (replay_append_if_pb) {
-			engine->demoplayer->replayName += *replay_append_if_pb;
-		}
-		return;
-	}
-
-	auto map_id = it->second;
-
+	bool lp_enabled = portals && *portals >= 0 && !g_lphub_key.empty()
+		&& (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel));
 	int score = (int)floor(final_time * 100);
+	int time_ticks = TIME_TO_TICKS(final_time);
+	std::string map_name = engine->GetCurrentMapName();
+	auto map_id = GetMapId(map_name);
+	if (!map_id) console->Print("Unknown map; not autosubmitting\n");
 
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(submitTime, score, std::string(demopath), Utils::StartsWith(engine->GetCurrentMapName().c_str(), "mp_"), map_id, rename_if_pb, replay_append_if_pb);
+	std::string path(demopath), lp_key = g_lphub_key;
+	g_worker = std::thread([=]() mutable {
+		auto time_outcome = map_id
+			? checkTimePb(score, *map_id)
+			: PbOutcome::Unknown;
+		// Preserve time naming for a PB or an unknown result (rename just in case).
+		if (rename_if_pb && time_outcome != PbOutcome::NotPb) {
+			renameDemo(path, *rename_if_pb, replay_append_if_pb);
+		}
+		bool coop = Utils::StartsWith(map_name.c_str(), "mp_");
+		if (time_outcome == PbOutcome::Pb) {
+			submitTime(score, path, coop, *map_id);
+		}
+		if (lp_enabled) {
+			auto lp_outcome = submitLP(*portals, path, lp_key, map_name, time_ticks);
+			// LP naming requires a confirmed time non-PB.
+			if (time_outcome == PbOutcome::NotPb && lp_outcome == PbOutcome::Pb && rename_if_pb && replay_append_if_pb) {
+				std::string suffix = "_" + std::to_string(*portals) + "p" + *replay_append_if_pb;
+				std::string target = rename_if_pb->substr(0, rename_if_pb->size() - 4 - replay_append_if_pb->size()) + suffix + ".dem";
+				renameDemo(path, target, suffix);
+			}
+		}
+		// Event hooks may join this worker, so queue this after all other scheduler calls.
+		if (time_outcome == PbOutcome::NotPb) {
+			Scheduler::OnMainThread([=]() {
+				Event::Trigger<Event::MAYBE_AUTOSUBMIT>({score, coop, false});
+			});
+		}
+	});
 }
 
 ON_EVENT(SAR_UNLOAD) {
