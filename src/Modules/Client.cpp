@@ -85,7 +85,7 @@ Variable sar_patch_minor_angle_decay("sar_patch_minor_angle_decay", "0", "Patche
 #endif
 );
 
-Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter.\n");
+Variable sar_unlocked_chapters("sar_unlocked_chapters", "-1", "Max unlocked chapter. Also unlocks the maps of coop courses up to this number in the challenge mode list.\n");
 
 Variable sar_portalcolor_enable("sar_portalcolor_enable", "0", "Enable custom portal colors.\n");
 Variable sar_portalcolor_sp_1("sar_portalcolor_sp_1", "64 160 255", "Portal color for Chell's left portal. r_portal_fastpath 0 required.\n");
@@ -130,6 +130,10 @@ REDECL(Client::ApplyMouse_Mid_Continue);
 #endif
 REDECL(Client::DrawPortal);
 REDECL(Client::GetChapterProgress);
+#ifdef _WIN32
+REDECL(Client::IsLevelComplete);
+REDECL(Client::SetChapterAndMapInfo);
+#endif
 
 
 CMDECL(Client::GetAbsOrigin, Vector, m_vecAbsOrigin);
@@ -1014,6 +1018,91 @@ DETOUR(Client::GetChapterProgress) {
 }
 Hook g_GetChapterProgressHook(&Client::GetChapterProgress_Hook);
 
+// The coop challenge mode list locks every map neither player has completed. Treat the maps of
+// courses 1 to N as completed there; the real completion data is left alone.
+#ifdef _WIN32
+// SetChapterAndMapInfo checks completion through IsLevelComplete in game and through a title
+// data helper (its only caller) outside one. Both answer true while it runs for an unlocked course.
+static bool g_unlockLeaderboardMapItem = false;
+
+extern Hook g_IsLevelCompleteHook;
+DETOUR_T(bool, Client::IsLevelComplete, int branch, int level) {
+	if (g_unlockLeaderboardMapItem)
+		return true;
+
+	g_IsLevelCompleteHook.Disable();
+	auto ret = Client::IsLevelComplete(thisptr, branch, level);
+	g_IsLevelCompleteHook.Enable();
+	return ret;
+}
+Hook g_IsLevelCompleteHook(&Client::IsLevelComplete_Hook);
+
+using _TitleDataGetBool = bool(__cdecl *)(void *field, void *titleData);
+static _TitleDataGetBool TitleDataGetBool;
+
+extern Hook g_TitleDataGetBoolHook;
+static bool __cdecl TitleDataGetBool_Hook(void *field, void *titleData) {
+	if (g_unlockLeaderboardMapItem)
+		return true;
+
+	g_TitleDataGetBoolHook.Disable();
+	auto ret = TitleDataGetBool(field, titleData);
+	g_TitleDataGetBoolHook.Enable();
+	return ret;
+}
+Hook g_TitleDataGetBoolHook(&TitleDataGetBool_Hook);
+
+extern Hook g_SetChapterAndMapInfoHook;
+DETOUR_T(void, Client::SetChapterAndMapInfo, int chapter, int map, int a4, int chapterProgress) {
+	g_unlockLeaderboardMapItem = chapter <= sar_unlocked_chapters.GetInt();
+
+	g_SetChapterAndMapInfoHook.Disable();
+	Client::SetChapterAndMapInfo(thisptr, chapter, map, a4, chapterProgress);
+	g_SetChapterAndMapInfoHook.Enable();
+
+	g_unlockLeaderboardMapItem = false;
+}
+Hook g_SetChapterAndMapInfoHook(&Client::SetChapterAndMapInfo_Hook);
+#else
+// Linux inlines that helper into SetChapterAndMapInfo, which also takes its arguments in registers.
+// Both of its completion checks meet at "mov eax, [ebp]; mov ebx, [eax + 0x28]; test dl, dl" with
+// the result in dl and the map item in esi, so those first 6 bytes become a call to this stub. It
+// redoes them, then sets dl for maps of unlocked courses (the item's chapter is at +0x1A0).
+Memory::Patch *g_leaderboardMapItemPatch;
+
+extern "C" {
+__attribute__((used)) static bool LeaderboardMapItemUnlocked(int chapter) {
+	return chapter <= sar_unlocked_chapters.GetInt();
+}
+__attribute__((visibility("hidden"))) void LeaderboardMapItemComplete_Stub();
+}
+
+asm(R"(
+	.text
+	.globl LeaderboardMapItemComplete_Stub
+	.hidden LeaderboardMapItemComplete_Stub
+	.p2align 4
+LeaderboardMapItemComplete_Stub:
+	.intel_syntax noprefix
+	mov eax, [ebp]
+	mov ebx, [eax + 0x28]
+	test dl, dl
+	jnz 1f
+	push ebp
+	mov ebp, esp
+	and esp, -16
+	sub esp, 12
+	push dword ptr [esi + 0x1A0]
+	call LeaderboardMapItemUnlocked
+	mov esp, ebp
+	pop ebp
+	mov edx, eax
+1:
+	ret
+	.att_syntax prefix
+)");
+#endif
+
 bool Client::Init() {
 	bool readJmp = false;
 #ifdef _WIN32
@@ -1288,6 +1377,27 @@ bool Client::Init() {
 	Client::GetChapterProgress = (decltype(Client::GetChapterProgress))Memory::Scan(this->Name(), Offsets::GetChapterProgress);
 	g_GetChapterProgressHook.SetFunc(Client::GetChapterProgress);
 
+	if (sar.game->Is(SourceGame_Portal2 | SourceGame_Portal2_2011)) {
+#ifdef _WIN32
+		Client::IsLevelComplete = (decltype(Client::IsLevelComplete))Memory::Scan(this->Name(), Offsets::IsLevelComplete);
+		Client::SetChapterAndMapInfo = (decltype(Client::SetChapterAndMapInfo))Memory::Scan(this->Name(), Offsets::SetChapterAndMapInfo);
+		TitleDataGetBool = (_TitleDataGetBool)Memory::Scan(this->Name(), Offsets::TitleDataGetBool);
+		if (Client::IsLevelComplete && Client::SetChapterAndMapInfo && TitleDataGetBool) {
+			g_IsLevelCompleteHook.SetFunc(Client::IsLevelComplete);
+			g_SetChapterAndMapInfoHook.SetFunc(Client::SetChapterAndMapInfo);
+			g_TitleDataGetBoolHook.SetFunc(TitleDataGetBool);
+		}
+#else
+		g_leaderboardMapItemPatch = new Memory::Patch();
+		auto completeCheck = Memory::Scan(this->Name(), Offsets::LeaderboardMapItemComplete, Offsets::LeaderboardMapItemCompleteOff);
+		if (completeCheck) {
+			unsigned char callStub[6] = {0xE8, 0, 0, 0, 0, 0x90};
+			*(uint32_t *)(callStub + 1) = (uintptr_t)&LeaderboardMapItemComplete_Stub - (completeCheck + 5);
+			g_leaderboardMapItemPatch->Execute(completeCheck, callStub);
+		}
+#endif
+	}
+
 	cl_showpos = Variable("cl_showpos");
 	cl_sidespeed = Variable("cl_sidespeed");
 	cl_forwardspeed = Variable("cl_forwardspeed");
@@ -1340,6 +1450,10 @@ void Client::Shutdown() {
 	Command::Unhook("unpause", Client::closeleaderboard_callback);
 	SAFE_DELETE(g_drawPortalPatch);
 	SAFE_DELETE(g_drawPortalGhostPatch);
+#ifndef _WIN32
+	if (g_leaderboardMapItemPatch) g_leaderboardMapItemPatch->Restore();
+	SAFE_DELETE(g_leaderboardMapItemPatch);
+#endif
 }
 
 Client *client;
