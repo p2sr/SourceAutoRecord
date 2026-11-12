@@ -5,6 +5,11 @@
 struct MoveToolParams : public TasToolParams {
 	float forwardMove = 0;
 	float sideMove = 0;
+	// `<N>deg`: the direction is computed in Apply, where the script version is known
+	bool movingByDegrees = false;
+	float degrees = 0;
+	float scale = 1;
+	bool scaleAssigned = false;
 	MoveToolParams()
 		: TasToolParams() {
 	}
@@ -13,6 +18,14 @@ struct MoveToolParams : public TasToolParams {
 		: TasToolParams(true)
 		, forwardMove(forwardMove)
 		, sideMove(sideMove) {
+	}
+
+	MoveToolParams(float degrees, float scale, bool scaleAssigned)
+		: TasToolParams(true)
+		, movingByDegrees(true)
+		, degrees(degrees)
+		, scale(scale)
+		, scaleAssigned(scaleAssigned) {
 	}
 };
 

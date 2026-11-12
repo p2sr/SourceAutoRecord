@@ -5,15 +5,26 @@
 #include <string>
 #include <vector>
 
+// glibc's sinf etc. sometimes return a slightly different value than
+// MSVC's, which computes them in double. Since version 10 the tools use
+// Math::Sin etc. (float in/out, computed in double) on every platform.
+// Older scripts keep the platform's own functions
+#define tasSinf(x) (TAS_SCRIPT_VERSION_AT_LEAST(10) ? Math::Sin(x) : sinf(x))
+#define tasCosf(x) (TAS_SCRIPT_VERSION_AT_LEAST(10) ? Math::Cos(x) : cosf(x))
+#define tasAtan2f(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(10) ? Math::Atan2(x, y) : atan2f(x, y))
+#define tasAcosf(x) (TAS_SCRIPT_VERSION_AT_LEAST(10) ? Math::Acos(x) : acosf(x))
+#define tasAsinf(x) (TAS_SCRIPT_VERSION_AT_LEAST(10) ? Math::Asin(x) : asinf(x))
+#define tasPowf(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(10) ? Math::Pow(x, y) : powf(x, y))
+
 // A bunch of stuff accidentally used sin/cos directly, which led to
 // inconsistent scripts between Windows and Linux since Windows has
 // overloads for some functions. These helper macros dispatch to
 // sinf/cosf on newer script versions for platform consistency
 #define absOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(3) ? fabsf(x) : abs(x))  // we noticed this one sooner lol
-#define sinOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? sinf(x) : sin(x))
-#define cosOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? cosf(x) : cos(x))
-#define atan2Old(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? atan2f(x, y) : atan2(x, y))
-#define powOld(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? powf(x, y) : pow(x, y))
+#define sinOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? tasSinf(x) : sin(x))
+#define cosOld(x) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? tasCosf(x) : cos(x))
+#define atan2Old(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? tasAtan2f(x, y) : atan2(x, y))
+#define powOld(x, y) (TAS_SCRIPT_VERSION_AT_LEAST(4) ? tasPowf(x, y) : pow(x, y))
 
 struct TasToolParams {
 	bool enabled = false;

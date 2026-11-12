@@ -30,6 +30,7 @@ void SetAngleTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	}
 
 	bulk.viewAnalog = bulk.viewAnalog + AngleToolsUtils::GetInterpolatedViewAnalog(
+		slot,
 		QAngleToVector(playerInfo.angles),
 		target,
 		params.easingTicks,

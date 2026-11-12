@@ -8,8 +8,9 @@ Vector TasUtils::GetVelocityAngles(const TasPlayerInfo *pi) {
 
 	Math::VectorNormalize(velocityAngles);
 
-	float yaw = atan2f(velocityAngles.y, velocityAngles.x);
-	float pitch = atan2f(velocityAngles.z, sqrtf(velocityAngles.y * velocityAngles.y + velocityAngles.x * velocityAngles.x));
+	int slot = pi->slot;
+	float yaw = tasAtan2f(velocityAngles.y, velocityAngles.x);
+	float pitch = tasAtan2f(velocityAngles.z, sqrtf(velocityAngles.y * velocityAngles.y + velocityAngles.x * velocityAngles.x));
 
 	return {RAD2DEG(yaw), RAD2DEG(pitch), 0};
 }

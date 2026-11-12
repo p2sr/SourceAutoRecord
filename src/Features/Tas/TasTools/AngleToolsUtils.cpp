@@ -1,16 +1,18 @@
 #include "AngleToolsUtils.hpp"
 
+#include "Features/Tas/TasPlayer.hpp"
+
 namespace AngleToolsUtils {
-	float Ease(float t, EasingType easingType) {
+	float Ease(int slot, float t, EasingType easingType) {
 		if (t == 0.0f || t == 1.0f) return t;
 
 		switch (easingType) {
 		case Sine:
-			return (cosf(M_PI * t) - 1.0f) / -2.0f;
+			return (tasCosf(M_PI * t) - 1.0f) / -2.0f;
 		case Cubic:
-			return t < 0.5f ? 4.0f * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
+			return t < 0.5f ? 4.0f * t * t * t : 1.0f - tasPowf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
 		case Exponential:
-			return t < 0.5f ? powf(2.0f, 20.0f * t - 10.0f) / 2 : (2 - powf(2.0f, -20.0f * t + 10.0f)) / 2.0f;
+			return t < 0.5f ? tasPowf(2.0f, 20.0f * t - 10.0f) / 2 : (2 - tasPowf(2.0f, -20.0f * t + 10.0f)) / 2.0f;
 		default:
 			return t;
 		}
@@ -30,7 +32,7 @@ namespace AngleToolsUtils {
 		}
 	}
 
-	Vector GetInterpolatedViewAnalog(Vector currentAngles, Vector targetAngles, int easingTicks, int elapsedTicks, EasingType easingType) {
+	Vector GetInterpolatedViewAnalog(int slot, Vector currentAngles, Vector targetAngles, int easingTicks, int elapsedTicks, EasingType easingType) {
 		Vector requiredDelta = currentAngles - targetAngles;
 
 		while (requiredDelta.y < 0.0f) requiredDelta.y += 360.0f;
@@ -46,8 +48,8 @@ namespace AngleToolsUtils {
 		} else {
 			float realFactorNow = elapsedTicks / (float)easingTicks;
 			float realFactorNext = (elapsedTicks + 1) / (float)easingTicks;
-			float easeFactorNow = Ease(realFactorNow, easingType);
-			float easeFactorNext = Ease(realFactorNext, easingType);
+			float easeFactorNow = Ease(slot, realFactorNow, easingType);
+			float easeFactorNext = Ease(slot, realFactorNext, easingType);
 
 			// how much of the remaining angle distance we should move
 			float partFactor = (easeFactorNext - easeFactorNow) / (1.0f - easeFactorNow);

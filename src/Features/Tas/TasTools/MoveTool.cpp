@@ -26,11 +26,28 @@ void MoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) {
 		tasAbsoluteMoveTool[slot].Reset();
 	}
 
-	fb.moveAnalog.x = params.sideMove;
-	fb.moveAnalog.y = params.forwardMove;
+	float forwardMove = params.forwardMove;
+	float sideMove = params.sideMove;
+
+	if (params.movingByDegrees) {
+		forwardMove = tasCosf(params.degrees);
+		sideMove = tasSinf(params.degrees);
+
+		if (params.scaleAssigned) {
+			auto length = sqrtf((forwardMove * forwardMove) + (sideMove * sideMove));
+			forwardMove /= length;
+			sideMove /= length;
+		}
+
+		forwardMove *= params.scale;
+		sideMove *= params.scale;
+	}
+
+	fb.moveAnalog.x = sideMove;
+	fb.moveAnalog.y = forwardMove;
 
 	if (sar_tas_debug.GetBool()) {
-		console->Print("move %.3f %.3f\n", params.forwardMove, params.sideMove);
+		console->Print("move %.3f %.3f\n", forwardMove, sideMove);
 	}
 }
 
@@ -41,6 +58,7 @@ std::shared_ptr<TasToolParams> MoveTool::ParseParams(std::vector<std::string> vp
 
 	float forwardMove = 0.0f;
 	float sideMove = 0.0f;
+	float degrees = 0.0f;
 	float scale = 1.0f;
 
 	int numberCount = 0;
@@ -58,9 +76,7 @@ std::shared_ptr<TasToolParams> MoveTool::ParseParams(std::vector<std::string> vp
 				throw TasParserException(Utils::ssprintf("Repeated degrees parameter for tool %s: %s", this->GetName(), param.c_str()));
 			}
 			movingByDegrees = true;
-			float degrees = TasParser::toFloat(param.substr(0, param.size() - 3));
-			forwardMove = cosf(degrees);
-			sideMove = sinf(degrees);
+			degrees = TasParser::toFloat(param.substr(0, param.size() - 3));
 		}
 
 		else if (param == "forward") {
@@ -102,6 +118,10 @@ std::shared_ptr<TasToolParams> MoveTool::ParseParams(std::vector<std::string> vp
 
 	if (directionsCount > 0 && movingByDegrees) {
 		throw TasParserException(Utils::ssprintf("Too many direction identifiers for tool %s", this->GetName()));
+	}
+
+	if (movingByDegrees) {
+		return std::make_shared<MoveToolParams>(degrees, scale, scaleAssigned);
 	}
 
 	if (directionsCount > 0 || scaleAssigned) {
