@@ -18,6 +18,7 @@
 #include <curl/curl.h>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <map>
 #include <optional>
 #include <sstream>
@@ -448,6 +449,9 @@ static std::optional<json11::Json> postLP(const char *path, const std::string &k
 		curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
 	}
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	if (!pb_check) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: PB confirmed. Uploading demo...");
+	}
 	auto response = request(curl, std::string(LPHUB_API_BASE) + path, LPHUB_AUTOSUBMIT_TIMEOUT);
 	curl_mime_free(form);
 	curl_easy_cleanup(curl);
@@ -476,6 +480,7 @@ static PbOutcome checkLpPb(int score, const std::string &key, const std::string 
 		{"portal_count", score},
 		{"score_time", time_taken}, // Challenge time in ticks.
 	};
+	THREAD_PRINT("LPHUB: checking PB.\n");
 	auto pb = postLP(LPHUB_PB_PATH, key, payload.dump(), true);
 	if (!pb) return PbOutcome::Unknown;
 	if (!(*pb)["data"]["is_personal_best"].is_bool()) {
@@ -486,6 +491,7 @@ static PbOutcome checkLpPb(int score, const std::string &key, const std::string 
 		THREAD_PRINT("LPHUB: not PB; not submitting.\n");
 		return PbOutcome::NotPb;
 	}
+	THREAD_PRINT("LPHUB: PB confirmed.\n");
 	return PbOutcome::Pb;
 }
 
@@ -760,6 +766,11 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	if (g_worker.joinable()) g_worker.join();
 	std::string path(demopath), lp_key = g_lphub_key;
 	g_worker = std::thread([=]() mutable {
+		// Neither board's PB check should wait for the other board's requests.
+		std::future<PbOutcome> lp_check;
+		if (lp_enabled) {
+			lp_check = std::async(std::launch::async, checkLpPb, *portals, lp_key, map_name, time_ticks);
+		}
 		auto time_outcome = map_id
 			? checkTimePb(score, *map_id)
 			: PbOutcome::Unknown;
@@ -767,21 +778,19 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		if (rename_if_pb && time_outcome != PbOutcome::NotPb) {
 			renameDemo(path, *rename_if_pb, replay_append_if_pb);
 		}
+		auto lp_outcome = lp_enabled ? lp_check.get() : PbOutcome::Unknown;
+		// LP naming requires a confirmed time non-PB.
+		if (time_outcome == PbOutcome::NotPb && lp_outcome == PbOutcome::Pb && rename_if_pb && replay_append_if_pb) {
+			std::string suffix = "_" + std::to_string(*portals) + "p" + *replay_append_if_pb;
+			std::string target = rename_if_pb->substr(0, rename_if_pb->size() - 4 - replay_append_if_pb->size()) + suffix + ".dem";
+			renameDemo(path, target, suffix);
+		}
 		bool coop = Utils::StartsWith(map_name.c_str(), "mp_");
 		if (time_outcome == PbOutcome::Pb) {
 			submitTime(score, path, coop, *map_id);
 		}
-		if (lp_enabled) {
-			auto lp_outcome = checkLpPb(*portals, lp_key, map_name, time_ticks);
-			// LP naming requires a confirmed time non-PB.
-			if (time_outcome == PbOutcome::NotPb && lp_outcome == PbOutcome::Pb && rename_if_pb && replay_append_if_pb) {
-				std::string suffix = "_" + std::to_string(*portals) + "p" + *replay_append_if_pb;
-				std::string target = rename_if_pb->substr(0, rename_if_pb->size() - 4 - replay_append_if_pb->size()) + suffix + ".dem";
-				renameDemo(path, target, suffix);
-			}
-			if (lp_outcome == PbOutcome::Pb) {
-				submitLP(path, lp_key);
-			}
+		if (lp_outcome == PbOutcome::Pb) {
+			submitLP(path, lp_key);
 		}
 		// Event hooks may join this worker, so queue this after all other scheduler calls.
 		if (time_outcome == PbOutcome::NotPb) {
