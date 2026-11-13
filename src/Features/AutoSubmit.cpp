@@ -31,8 +31,9 @@
 // TODO: Adjust these API paths and payloads when LPHUB's API is available.
 #define LPHUB_API_BASE "https://lp.portal2.sr"
 #define LPHUB_VALIDATE_PATH "/validate-user"
-#define LPHUB_PB_PATH "/current-pb"
+#define LPHUB_PB_PATH "/records/pb"
 #define LPHUB_SUBMIT_PATH "/auto-submit"
+#define LPHUB_AUTOSUBMIT_TIMEOUT 120
 
 bool AutoSubmit::g_cheated = false;
 int AutoSubmit::g_paused = 0;
@@ -392,7 +393,7 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't ready CURL");
 		return PbOutcome::Unknown;
 	}
-	std::string authorization = "Authorization: " + key;
+	std::string authorization = "Authorization: Bearer " + key;
 	curl_slist *headers = curl_slist_append(nullptr, authorization.c_str());
 	if (!headers) {
 		curl_easy_cleanup(curl);
@@ -402,7 +403,7 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	const std::string base = std::string(LPHUB_API_BASE) + "/api/v1";
 	auto lphubRequest = [&](const char *path) -> std::optional<json11::Json> {
-		auto response = request(curl, base + path, 90);
+		auto response = request(curl, base + path, LPHUB_AUTOSUBMIT_TIMEOUT);
 		if (!response) {
 			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: didn't get a response");
 			return {};
@@ -709,11 +710,6 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		return;
 	}	
 	
-#if defined(SAR_DEV_BUILD)
-	console->Print("Dev SAR build; not autosubmitting\n");
-	return;
-#endif
-
 	bool lp_enabled = portals && *portals >= 0 && !g_lphub_key.empty()
 		&& (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel));
 	int score = (int)floor(final_time * 100);
