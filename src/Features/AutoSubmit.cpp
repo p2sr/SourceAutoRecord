@@ -28,11 +28,10 @@
 #define COOP_NAME_MESSAGE_TYPE "coop-name"
 #define API_KEY_FILE "autosubmit.key"
 #define OLD_API_KEY_FILE "autosubmit_key.txt"
-// TODO: Adjust these API paths and payloads when LPHUB's API is available.
-#define LPHUB_API_BASE "https://lp.portal2.sr"
-#define LPHUB_VALIDATE_PATH "/validate-user"
-#define LPHUB_PB_PATH "/records/pb"
-#define LPHUB_SUBMIT_PATH "/auto-submit"
+#define LPHUB_API_BASE "https://lp.portal2.sr/api/v1"
+#define LPHUB_VALIDATE_PATH "/token/autosubmit"
+#define LPHUB_PB_PATH "/record/pb"
+#define LPHUB_SUBMIT_PATH "/record"
 #define LPHUB_AUTOSUBMIT_TIMEOUT 120
 
 bool AutoSubmit::g_cheated = false;
@@ -401,9 +400,8 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 		return PbOutcome::Unknown;
 	}
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-	const std::string base = std::string(LPHUB_API_BASE) + "/api/v1";
 	auto lphubRequest = [&](const char *path) -> std::optional<json11::Json> {
-		auto response = request(curl, base + path, LPHUB_AUTOSUBMIT_TIMEOUT);
+		auto response = request(curl, std::string(LPHUB_API_BASE) + path, LPHUB_AUTOSUBMIT_TIMEOUT);
 		if (!response) {
 			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: didn't get a response");
 			return {};
@@ -421,12 +419,12 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 		}
 		return json;
 	};
-	auto post = [&](const char *path, bool upload, bool map_check = false) {
-		if (map_check) {
+	auto post = [&](const char *path, bool pb_check = false) {
+		if (pb_check) {
 			json11::Json payload = json11::Json::object{
-				{"map_name", map_name},
+				{"engine_map_name", map_name},
 				{"portal_count", score},
-				{"time_taken", time_taken}, // Challenge time in ticks.
+				{"score_time", time_taken}, // Challenge time in ticks.
 			};
 			std::string body = payload.dump();
 			curl_slist *json_headers = curl_slist_append(nullptr, authorization.c_str());
@@ -440,18 +438,18 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 			return response;
 		}
 		curl_mime *form = curl_mime_init(curl);
-		if (upload) {
-			auto field = curl_mime_addpart(form);
-			curl_mime_name(field, "host_demo");
-			curl_mime_filedata(field, demopath.c_str());
-		}
+		auto field = curl_mime_addpart(form);
+		curl_mime_name(field, "host_demo");
+		curl_mime_filedata(field, demopath.c_str());
 		curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
 		auto response = lphubRequest(path);
+		curl_easy_setopt(curl, CURLOPT_MIMEPOST, nullptr);
 		curl_mime_free(form);
 		return response;
 	};
-	auto validated = post(LPHUB_VALIDATE_PATH, false);
-	auto pb = validated ? post(LPHUB_PB_PATH, false, true) : std::nullopt;
+	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+	auto validated = lphubRequest(LPHUB_VALIDATE_PATH);
+	auto pb = validated ? post(LPHUB_PB_PATH, true) : std::nullopt;
 	PbOutcome outcome = PbOutcome::Unknown;
 	if (pb && !(*pb)["data"]["is_personal_best"].is_bool()) {
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't fetch PB");
@@ -460,7 +458,7 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 		THREAD_PRINT("LPHUB: not PB; not submitting.\n");
 	} else if (pb) {
 		outcome = PbOutcome::Pb;
-		if (post(LPHUB_SUBMIT_PATH, true)) {
+		if (post(LPHUB_SUBMIT_PATH)) {
 			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "Successfully submitted to LPHUB!");
 		}
 	}
