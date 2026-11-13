@@ -119,6 +119,41 @@ static std::optional<std::string> request(CURL *curl, std::string url, long time
 	return res == CURLE_OK && code == 200 ? response : std::optional<std::string>{};
 }
 
+static void testLpApiKey() {
+	if (g_lphub_key.empty()) return;
+	CURL *curl = curl_easy_init();
+	if (!curl) {
+		THREAD_PRINT("LPHUB: couldn't test autosubmit token; couldn't ready CURL.\n");
+		return;
+	}
+	std::string authorization = "Authorization: Bearer " + g_lphub_key;
+	curl_slist *headers = curl_slist_append(nullptr, authorization.c_str());
+	if (!headers) {
+		curl_easy_cleanup(curl);
+		THREAD_PRINT("LPHUB: couldn't test autosubmit token; couldn't set authorization header.\n");
+		return;
+	}
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+	auto response = request(curl, std::string(LPHUB_API_BASE) + LPHUB_VALIDATE_PATH);
+	curl_easy_cleanup(curl);
+	curl_slist_free_all(headers);
+	if (!response) {
+		THREAD_PRINT("LPHUB: couldn't validate autosubmit token; request failed.\n");
+		return;
+	}
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+	if (!err.empty() || !json["success"].is_bool()) {
+		THREAD_PRINT("LPHUB: couldn't validate autosubmit token; invalid response.\n");
+	} else if (!json["success"].bool_value()) {
+		auto message = json["message"].string_value();
+		THREAD_PRINT("LPHUB: autosubmit token rejected: %s\n", message.empty() ? "validation failed" : message.c_str());
+	} else {
+		THREAD_PRINT("LPHUB: autosubmit token valid!\n");
+	}
+}
+
 static void testApiKey() {
 	auto host = g_api_base.substr(g_api_base.find("://") + 3);
 	host = host.substr(0, host.find('/'));
@@ -386,88 +421,78 @@ static void submitTime(int score, const std::string &demopath, bool coop, const 
 	}
 }
 
-static PbOutcome submitLP(int score, const std::string &demopath, const std::string &key, const std::string &map_name, int time_taken) {
-	if (!sar.game->Is(SourceGame_Portal2) && !sar.game->Is(SourceGame_PortalStoriesMel)) return PbOutcome::Unknown;
-	if (key.empty()) return PbOutcome::Unknown;
+static std::optional<json11::Json> postLP(const char *path, const std::string &key, const std::string &data, bool pb_check) {
+	if (!sar.game->Is(SourceGame_Portal2) && !sar.game->Is(SourceGame_PortalStoriesMel)) return {};
+	if (key.empty()) return {};
 	CURL *curl = curl_easy_init();
 	if (!curl) {
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't ready CURL");
-		return PbOutcome::Unknown;
+		return {};
 	}
 	std::string authorization = "Authorization: Bearer " + key;
 	curl_slist *headers = curl_slist_append(nullptr, authorization.c_str());
 	if (!headers) {
 		curl_easy_cleanup(curl);
 		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't set authorization header");
-		return PbOutcome::Unknown;
+		return {};
 	}
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-	auto lphubRequest = [&](const char *path) -> std::optional<json11::Json> {
-		THREAD_PRINT("LPHUB: requesting %s\n", path);
-		auto response = request(curl, std::string(LPHUB_API_BASE) + path, LPHUB_AUTOSUBMIT_TIMEOUT);
-		if (!response) {
-			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: didn't get a response");
-			return {};
-		}
-		std::string err;
-		auto json = json11::Json::parse(*response, err);
-		if (!err.empty() || !json["success"].is_bool()) {
-			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: invalid response");
-			return {};
-		}
-		if (!json["success"].bool_value()) {
-			auto message = json["message"].string_value();
-			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: " + (message.empty() ? "request failed" : message));
-			return {};
-		}
-		return json;
-	};
-	auto post = [&](const char *path, bool pb_check = false) {
-		if (pb_check) {
-			json11::Json payload = json11::Json::object{
-				{"engine_map_name", map_name},
-				{"portal_count", score},
-				{"score_time", time_taken}, // Challenge time in ticks.
-			};
-			std::string body = payload.dump();
-			curl_slist *json_headers = curl_slist_append(nullptr, authorization.c_str());
-			json_headers = curl_slist_append(json_headers, "Content-Type: application/json");
-			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, json_headers);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
-			auto response = lphubRequest(path);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
-			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-			curl_slist_free_all(json_headers);
-			return response;
-		}
-		curl_mime *form = curl_mime_init(curl);
+	curl_mime *form = nullptr;
+	if (pb_check) {
+		headers = curl_slist_append(headers, "Content-Type: application/json");
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
+	} else {
+		form = curl_mime_init(curl);
 		auto field = curl_mime_addpart(form);
 		curl_mime_name(field, "host_demo");
-		curl_mime_filedata(field, demopath.c_str());
+		curl_mime_filedata(field, data.c_str());
 		curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
-		auto response = lphubRequest(path);
-		curl_easy_setopt(curl, CURLOPT_MIMEPOST, nullptr);
-		curl_mime_free(form);
-		return response;
-	};
-	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-	auto validated = lphubRequest(LPHUB_VALIDATE_PATH);
-	auto pb = validated ? post(LPHUB_PB_PATH, true) : std::nullopt;
-	PbOutcome outcome = PbOutcome::Unknown;
-	if (pb && !(*pb)["data"]["is_personal_best"].is_bool()) {
-		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't fetch PB");
-	} else if (pb && !(*pb)["data"]["is_personal_best"].bool_value()) {
-		outcome = PbOutcome::NotPb;
-		THREAD_PRINT("LPHUB: not PB; not submitting.\n");
-	} else if (pb) {
-		outcome = PbOutcome::Pb;
-		if (post(LPHUB_SUBMIT_PATH)) {
-			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "Successfully submitted to LPHUB!");
-		}
 	}
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	auto response = request(curl, std::string(LPHUB_API_BASE) + path, LPHUB_AUTOSUBMIT_TIMEOUT);
+	curl_mime_free(form);
 	curl_easy_cleanup(curl);
 	curl_slist_free_all(headers);
-	return outcome;
+	if (!response) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: didn't get a response");
+		return {};
+	}
+	std::string err;
+	auto json = json11::Json::parse(*response, err);
+	if (!err.empty() || !json["success"].is_bool()) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: invalid response");
+		return {};
+	}
+	if (!json["success"].bool_value()) {
+		auto message = json["message"].string_value();
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: " + (message.empty() ? "request failed" : message));
+		return {};
+	}
+	return json;
+}
+
+static PbOutcome checkLpPb(int score, const std::string &key, const std::string &map_name, int time_taken) {
+	json11::Json payload = json11::Json::object{
+		{"engine_map_name", map_name},
+		{"portal_count", score},
+		{"score_time", time_taken}, // Challenge time in ticks.
+	};
+	auto pb = postLP(LPHUB_PB_PATH, key, payload.dump(), true);
+	if (!pb) return PbOutcome::Unknown;
+	if (!(*pb)["data"]["is_personal_best"].is_bool()) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: couldn't fetch PB");
+		return PbOutcome::Unknown;
+	}
+	if (!(*pb)["data"]["is_personal_best"].bool_value()) {
+		THREAD_PRINT("LPHUB: not PB; not submitting.\n");
+		return PbOutcome::NotPb;
+	}
+	return PbOutcome::Pb;
+}
+
+static void submitLP(const std::string &demopath, const std::string &key) {
+	if (postLP(LPHUB_SUBMIT_PATH, key, demopath, false)) {
+		toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "Successfully submitted to LPHUB!");
+	}
 }
 
 static void convertOldApiKeys() {
@@ -526,7 +551,7 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 		return;
 	}
 
-	// Read the LPHUB entry separately so the time-board parser stays unchanged.
+	// Read the LPHUB entry separately so the other boards stays unchanged.
 	{
 		std::ifstream f(filepath.value());
 		std::string host, hash;
@@ -577,18 +602,19 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 		valid = false;
 	}
 
-	if (!valid) {
+	if (valid) {
+		g_api_base = "https://" + base + "/api-v2";
+		g_api_key = key;
+		console->Print("%s: API key loaded; testing...\n", base.c_str());
+	} else {
 		console->Print("Invalid API key!\n");
-		return;
 	}
 
-	g_api_base = "https://"	+ base + "/api-v2";
-	g_api_key = key;
-	g_key_valid = false;
-	console->Print("%s: API key loaded; testing...\n", base.c_str());
-
 	if (g_worker.joinable()) g_worker.join();
-	g_worker = std::thread(testApiKey);
+	g_worker = std::thread([valid]() {
+		testLpApiKey();
+		if (valid) testApiKey();
+	});
 }
 
 size_t writeCallback(void *contents, size_t size, size_t nmemb, std::string *buffer) {
@@ -746,12 +772,15 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 			submitTime(score, path, coop, *map_id);
 		}
 		if (lp_enabled) {
-			auto lp_outcome = submitLP(*portals, path, lp_key, map_name, time_ticks);
+			auto lp_outcome = checkLpPb(*portals, lp_key, map_name, time_ticks);
 			// LP naming requires a confirmed time non-PB.
 			if (time_outcome == PbOutcome::NotPb && lp_outcome == PbOutcome::Pb && rename_if_pb && replay_append_if_pb) {
 				std::string suffix = "_" + std::to_string(*portals) + "p" + *replay_append_if_pb;
 				std::string target = rename_if_pb->substr(0, rename_if_pb->size() - 4 - replay_append_if_pb->size()) + suffix + ".dem";
 				renameDemo(path, target, suffix);
+			}
+			if (lp_outcome == PbOutcome::Pb) {
+				submitLP(path, lp_key);
 			}
 		}
 		// Event hooks may join this worker, so queue this after all other scheduler calls.
