@@ -120,8 +120,10 @@ static std::optional<std::string> request(CURL *curl, std::string url, long time
 }
 
 static void testApiKey() {
+	auto host = g_api_base.substr(g_api_base.find("://") + 3);
+	host = host.substr(0, host.find('/'));
 	if (!ensureCurlReady(&g_curl)) {
-		THREAD_PRINT("Failed to test API key!\n");
+		THREAD_PRINT("%s: couldn't test API key; couldn't ready CURL.\n", host.c_str());
 		return;
 	}
 
@@ -139,12 +141,12 @@ static void testApiKey() {
 	curl_mime_free(form);
 
 	if (!response) {
-		THREAD_PRINT("API key invalid!\n");
+		THREAD_PRINT("%s: couldn't validate API key; request failed or key was rejected.\n", host.c_str());
 		return;
 	}
 
 	g_key_valid = true;
-	THREAD_PRINT("API key valid!\n");
+	THREAD_PRINT("%s: API key valid!\n", host.c_str());
 
 	// FIXME: add API maps endpoint on board.portal2.sr
 	if (sar.game->Is(SourceGame_Portal2)) {
@@ -158,7 +160,7 @@ static void testApiKey() {
 
 	response = request(g_curl, g_api_base + "/download-maps");
 	if (!response) {
-		THREAD_PRINT("Failed to download maps!\n");
+		THREAD_PRINT("%s: failed to download maps!\n", host.c_str());
 		return;
 	}
 
@@ -166,7 +168,7 @@ static void testApiKey() {
 	auto json = json11::Json::parse(*response, err);
 
 	if (err != "") {
-		THREAD_PRINT("Failed to parse maps JSON: %s\n", err.c_str());
+		THREAD_PRINT("%s: failed to parse maps JSON: %s\n", host.c_str(), err.c_str());
 		return;
 	}
 
@@ -174,7 +176,7 @@ static void testApiKey() {
 		g_map_ids.insert({map["level_name"].string_value(), map["id"].string_value()});
 	}
 
-	THREAD_PRINT("Downloaded %i maps!\n", g_map_ids.size());
+	THREAD_PRINT("%s: downloaded %zu maps!\n", host.c_str(), g_map_ids.size());
 }
 
 std::optional<std::string> AutoSubmit::GetMapId(std::string map_name) {
@@ -401,6 +403,7 @@ static PbOutcome submitLP(int score, const std::string &demopath, const std::str
 	}
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	auto lphubRequest = [&](const char *path) -> std::optional<json11::Json> {
+		THREAD_PRINT("LPHUB: requesting %s\n", path);
 		auto response = request(curl, std::string(LPHUB_API_BASE) + path, LPHUB_AUTOSUBMIT_TIMEOUT);
 		if (!response) {
 			toastHud.AddToast(AUTOSUBMIT_TOAST_TAG, "LPHUB: didn't get a response");
@@ -527,8 +530,10 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 	{
 		std::ifstream f(filepath.value());
 		std::string host, hash;
-		while (std::getline(f, host) && std::getline(f, hash)) {
-			if (!host.empty() && host.back() == '\r') host.pop_back();
+		while (std::getline(f, host)) {
+			host.erase(std::remove_if(host.begin(), host.end(), [](unsigned char c) { return std::isspace(c); }), host.end());
+			if (host.empty()) continue;
+			if (!std::getline(f, hash)) break;
 			if (host == "lp.portal2.sr") {
 				hash.erase(std::remove_if(hash.begin(), hash.end(), [](unsigned char c) { return std::isspace(c); }), hash.end());
 				g_lphub_key = hash;
@@ -536,6 +541,7 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 			}
 		}
 	}
+	if (!g_lphub_key.empty()) console->Print("LPHUB: autosubmit token loaded.\n");
 
 	std::string base;
 	std::string key;
@@ -579,7 +585,7 @@ void AutoSubmit::LoadApiKey(bool output_nonexist) {
 	g_api_base = "https://"	+ base + "/api-v2";
 	g_api_key = key;
 	g_key_valid = false;
-	console->Print("Set API key! Testing...\n");
+	console->Print("%s: API key loaded; testing...\n", base.c_str());
 
 	if (g_worker.joinable()) g_worker.join();
 	g_worker = std::thread(testApiKey);
@@ -708,8 +714,17 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 		return;
 	}	
 	
-	bool lp_enabled = portals && *portals >= 0 && !g_lphub_key.empty()
-		&& (sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel));
+	bool lp_supported = sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel);
+	bool lp_enabled = portals && *portals >= 0 && !g_lphub_key.empty() && lp_supported;
+	if (lp_supported && !lp_enabled) {
+		if (g_lphub_key.empty()) {
+			console->Print("LPHUB: skipping autosubmit; no token loaded. Check autosubmit.key and run sar_challenge_autosubmit_reload_api_key.\n");
+		} else if (!portals) {
+			console->Print("LPHUB: skipping autosubmit; no portal count available (singleplayer only).\n");
+		} else {
+			console->Print("LPHUB: skipping autosubmit; invalid portal count (%d).\n", *portals);
+		}
+	}
 	int score = (int)floor(final_time * 100);
 	int time_ticks = TIME_TO_TICKS(final_time);
 	std::string map_name = engine->GetCurrentMapName();
