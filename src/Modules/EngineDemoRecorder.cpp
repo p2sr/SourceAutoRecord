@@ -5,8 +5,6 @@
 #include "Console.hpp"
 #include "Engine.hpp"
 #include "Event.hpp"
-#include "Game.hpp"
-#include "Scheduler.hpp"
 #include "Features/AutoSubmit.hpp"
 #include "Features/EntityList.hpp"
 #include "Features/FovChanger.hpp"
@@ -14,15 +12,17 @@
 #include "Features/Speedrun/SpeedrunTimer.hpp"
 #include "Features/Timer/Timer.hpp"
 #include "Features/TimescaleDetect.hpp"
+#include "Game.hpp"
 #include "Offsets.hpp"
+#include "Scheduler.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
 #include "Version.hpp"
 
-#include <cstdio>
-#include <filesystem>
 #include <Hook.hpp>
 #include <InstanceIdentifier.hpp>
+#include <cstdio>
+#include <filesystem>
 
 REDECL(EngineDemoRecorder::SetSignonState);
 REDECL(EngineDemoRecorder::StartRecording);
@@ -139,14 +139,14 @@ ON_EVENT(SESSION_END) {
 DETOUR(EngineDemoRecorder::SetSignonState, int state) {
 	bool wasRecording = engine->demorecorder->isRecordingDemo;
 
-	//SIGNONSTATE_FULL is set twice during first CM load. Using SIGNONSTATE_SPAWN for demo number increase instead
+	//	SIGNONSTATE_FULL is set twice during first CM load. Using SIGNONSTATE_SPAWN for demo number increase instead
 	if (state == SIGNONSTATE_SPAWN) {
 		if (engine->demorecorder->isRecordingDemo || *engine->demorecorder->m_bRecording || sar_record_at_increment.GetBool()) {
 			engine->demorecorder->lastDemoNumber++;
 		}
 	}
 	if (state == SIGNONSTATE_FULL) {
-		//autorecording in different session (save deletion)
+		//	autorecording in different session (save deletion)
 		if (engine->demorecorder->isRecordingDemo) {
 			*engine->demorecorder->m_bRecording = true;
 		}
@@ -238,9 +238,9 @@ static void preventOverwrite(const char *filename, int idx) {
 	if (idx >= sar_demo_overwrite_bak.GetInt()) return;
 	try {
 		auto cur = getDemoBakName(filename, idx);
-		auto bak = getDemoBakName(filename, idx+1);
+		auto bak = getDemoBakName(filename, idx + 1);
 		if (std::filesystem::exists(cur)) {
-			preventOverwrite(filename, idx+1);
+			preventOverwrite(filename, idx + 1);
 			std::filesystem::rename(cur, bak);
 		}
 	} catch (...) {
@@ -396,7 +396,7 @@ void patchDemoHeaderTempFileToBeUnique() {
 		return;
 	}
 
-	g_uniqueDemoHeaderName = Utils::ssprintf("demoheader_%d.tmp", instanceID+1);
+	g_uniqueDemoHeaderName = Utils::ssprintf("demoheader_%d.tmp", instanceID + 1);
 
 	auto uniqueDemoHeaderName = g_uniqueDemoHeaderName.c_str();
 	auto uniqueDemoHeaderNamePtr = (unsigned char *)&uniqueDemoHeaderName;
@@ -471,7 +471,6 @@ void EngineDemoRecorder::RecordData(const void *data, unsigned long length) {
 }
 
 ON_EVENT(PRE_TICK) {
-
 	if (engine->demorecorder->m_bRecording) {
 		std::deque<EntitySlotSerial>::iterator val = g_ent_slot_serial.begin();
 		while (val != g_ent_slot_serial.end()) {
@@ -515,7 +514,7 @@ ON_EVENT(CM_FLAGS) {
 		engine->demorecorder->RecordData(data, sizeof data);
 
 		Scheduler::InHostTicks(DEMO_AUTOSTOP_DELAY, [=]() {
-			if (!engine->demorecorder->isRecordingDemo) return; // manual stop before autostop
+			if (!engine->demorecorder->isRecordingDemo) return;  // manual stop before autostop
 			if (sar_challenge_autostop.GetInt() > 0) {
 				std::string demoFile = engine->demorecorder->GetDemoFilename();
 
@@ -550,7 +549,7 @@ ON_EVENT(CM_FLAGS) {
 						demoFile = newName;
 						engine->demoplayer->replayName += "_";
 						engine->demoplayer->replayName += time;
-					} else { // autostop 3
+					} else {  // autostop 3
 						rename_if_pb = newName;
 						replay_append_if_pb = std::string("_") + time;
 					}

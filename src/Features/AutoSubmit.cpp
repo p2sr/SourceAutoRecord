@@ -48,9 +48,7 @@ ON_EVENT(SESSION_START) {
 }
 
 ON_INIT {
-	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) {
-		AutoSubmit::g_partner_name = std::string((char *)data, size);
-	});
+	NetMessage::RegisterHandler(COOP_NAME_MESSAGE_TYPE, +[](const void *data, size_t size) { AutoSubmit::g_partner_name = std::string((char *)data, size); });
 }
 
 ON_EVENT(SESSION_START) {
@@ -329,7 +327,7 @@ bool AutoSubmit::IsQuerying() {
 	return g_is_querying;
 }
 
-const std::vector<json11::Json>& AutoSubmit::GetTimes() {
+const std::vector<json11::Json> &AutoSubmit::GetTimes() {
 	return g_times;
 }
 
@@ -349,7 +347,9 @@ static bool renameDemo(std::string &path, const std::string &target, const std::
 	return true;
 }
 
-enum class PbOutcome { Unknown, NotPb, Pb };
+enum class PbOutcome { Unknown,
+                       NotPb,
+                       Pb };
 
 static PbOutcome checkTimePb(int score, const std::string &map_id) {
 	if (!g_key_valid) {
@@ -411,7 +411,7 @@ static void submitTime(int score, const std::string &demopath, bool coop, const 
 
 	curl_easy_setopt(g_curl, CURLOPT_MIMEPOST, form);
 
-	auto resp = request(g_curl, g_api_base +  "/auto-submit");
+	auto resp = request(g_curl, g_api_base + "/auto-submit");
 
 	curl_mime_free(form);
 
@@ -478,7 +478,7 @@ static PbOutcome checkLpPb(int score, const std::string &key, const std::string 
 	json11::Json payload = json11::Json::object{
 		{"engine_map_name", map_name},
 		{"portal_count", score},
-		{"score_time", time_taken}, // Challenge time in ticks.
+		{"score_time", time_taken},  // Challenge time in ticks.
 	};
 	THREAD_PRINT("LPHUB: checking PB.\n");
 	auto pb = postLP(LPHUB_PB_PATH, key, payload.dump(), true);
@@ -491,7 +491,6 @@ static PbOutcome checkLpPb(int score, const std::string &key, const std::string 
 		THREAD_PRINT("LPHUB: not PB; not submitting.\n");
 		return PbOutcome::NotPb;
 	}
-	THREAD_PRINT("LPHUB: PB confirmed.\n");
 	return PbOutcome::Pb;
 }
 
@@ -545,7 +544,7 @@ static void convertOldApiKeys() {
 void AutoSubmit::LoadApiKey(bool output_nonexist) {
 	convertOldApiKeys();
 	if (g_worker.joinable())
-	    g_worker.join();
+		g_worker.join();
 	g_lphub_key.clear();
 	g_key_valid = false;
 
@@ -687,7 +686,7 @@ void retrieveMtriggers(int rank, std::string map_name) {
 							auto ticks = split["ticks"].int_value();
 							auto segmentTime = ticks * engine->GetIPT();
 							time += ticks * engine->GetIPT();
-							auto timeS        = SpeedrunTimer::Format(time);
+							auto timeS = SpeedrunTimer::Format(time);
 							auto segmentTimeS = SpeedrunTimer::Format(segmentTime);
 							THREAD_PRINT("[%s] - %s (%s) (%i)\n", split["name"].string_value().c_str(), timeS.c_str(), segmentTimeS.c_str(), ticks);
 						}
@@ -744,8 +743,13 @@ void AutoSubmit::FinishRun(float final_time, const char *demopath, std::optional
 	if (AutoSubmit::g_paused > allowedPauses && engine->GetCurrentMapName() == "sp_a1_wakeup") {
 		console->Print("Pause detected in Wakeup (pause abuse is not allowed in CM); not autosubmitting\nManually submit this demo if you believe this was a mistake\n");
 		return;
-	}	
-	
+	}
+
+#if defined(SAR_DEV_BUILD)
+	console->Print("Dev SAR build; not autosubmitting\n");
+	return;
+#endif
+
 	bool lp_supported = sar.game->Is(SourceGame_Portal2) || sar.game->Is(SourceGame_PortalStoriesMel);
 	bool lp_enabled = portals && *portals >= 0 && !g_lphub_key.empty() && lp_supported;
 	if (lp_supported && !lp_enabled) {

@@ -15,5 +15,5 @@ namespace AutoSubmit {
 	void Search(std::string map);
 	json11::Json::array GetTopScores(std::string &map_id);
 	bool IsQuerying();
-	const std::vector<json11::Json>& GetTimes();
-};
+	const std::vector<json11::Json> &GetTimes();
+};  // namespace AutoSubmit
