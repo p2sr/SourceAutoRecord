@@ -101,6 +101,14 @@ public:
 	// CBaseModPanel::GetChapterProgress
 	DECL_DETOUR(GetChapterProgress);
 
+#ifdef _WIN32
+	// C_PortalMPGameRules::IsLevelComplete
+	DECL_DETOUR_T(bool, IsLevelComplete, int branch, int level);
+
+	// CLeaderboardMapItem::SetChapterAndMapInfo
+	DECL_DETOUR_T(void, SetChapterAndMapInfo, int chapter, int map, int a4, int chapterProgress);
+#endif
+
 	// BaseModUI::CPortalLeaderboardPanel::OnCommand
 	DECL_DETOUR(OnCommand, const char *a2);
 

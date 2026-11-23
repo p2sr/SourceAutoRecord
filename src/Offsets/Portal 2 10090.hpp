@@ -441,6 +441,14 @@ SIGSCAN_EMPTY(FindElementSig)
 
 SIGSCAN_DEFAULT(GetChapterProgress, "56 8B 35 ? ? ? ? 57 8B F9 FF D6 8B 10 8B C8",
                                     "55 89 E5 57 56 53 83 EC 0C E8 ? ? ? ? 83 EC 08 8B 10")
+SIGSCAN_DEFAULT(IsLevelComplete, "55 8B EC 8B 55 0C 83 FA 0F 77 ? 8B 45 08 83 F8 05 77 ? C1 E0 04 03 C2 80 BC 08 B5 19 00 00 00",
+                                 "") // "#COOP_MAP_NAME_TR%d_MAP%d" xref -> CLeaderboardMapItem::SetChapterAndMapInfo -> in-game branch -> C_PortalMPGameRules::IsLevelComplete (Linux: covered by LeaderboardMapItemComplete)
+SIGSCAN_DEFAULT(SetChapterAndMapInfo, "55 8B EC 81 EC 20 02 00 00 53 8B 5D 08 57 8B F9 89 7D F8 85 DB 0F 8E ? ? ? ? 8B 4D 0C 85 C9 0F 8E",
+                                      "") // "#COOP_MAP_NAME_TR%d_MAP%d" xref -> CLeaderboardMapItem::SetChapterAndMapInfo (Linux: custom calling convention)
+SIGSCAN_DEFAULT(TitleDataGetBool, "55 8B EC 8B 45 08 8B 4D 0C 8B 11 8B 52 14 56 8B 70 0C 8B 40 04 57 50 FF D2",
+                                  "") // CLeaderboardMapItem::SetChapterAndMapInfo -> "MP.complete.%s" title data bit read (Linux: inlined)
+SIGSCAN_DEFAULT(LeaderboardMapItemComplete, "", "83 E2 01 8B 2D ? ? ? ? 8B 45 00 8B 58 28 84 D2 74 ? FF B6 A8 01 00 00") // CLeaderboardMapItem::SetChapterAndMapInfo -> where its two completion checks meet
+OFFSET_DEFAULT(LeaderboardMapItemCompleteOff, 0, 9)
 
 SIGSCAN_DEFAULT(LoadingProgress__SetupControlStatesInstruction, "66 C7 86 ? ? ? ? ? ? EB", "66 89 83 ? ? ? ? E9 ? ? ? ? ? ? ? ? ? ? ? 85 F6") // "vgui/loading_screens/loadingscreen_coop" xref -> LoadingProgress::SetupControlStates -> m_bDrawProgress set to 0
 OFFSET_DEFAULT(LoadingProgress__SetupControlStatesBoolOffset, 7, 5)
