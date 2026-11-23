@@ -70,6 +70,7 @@ Variable cl_chat_active;
 Variable ss_pipsplit;
 Variable ss_pipscale;
 Variable ss_verticalsplit;
+Variable ss_force_primary_fullscreen;
 
 Variable sar_disable_coop_score_hud("sar_disable_coop_score_hud", "0", "Disables the coop score HUD which appears in demo playback.\n");
 Variable sar_disable_save_status_hud("sar_disable_save_status_hud", "0", "Disables the saving/saved HUD which appears when you make a save.\n");
@@ -1316,6 +1317,7 @@ bool Client::Init() {
 	ss_pipsplit = Variable("ss_pipsplit");
 	ss_pipscale = Variable("ss_pipscale");
 	ss_verticalsplit = Variable("ss_verticalsplit");
+	ss_force_primary_fullscreen = Variable("ss_force_primary_fullscreen");
 	cl_viewmodelfov = Variable("cl_viewmodelfov");
 
 	CVAR_HOOK_AND_CALLBACK(cl_fov);

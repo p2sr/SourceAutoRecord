@@ -231,6 +231,7 @@ extern Variable cl_chat_active;
 extern Variable ss_pipsplit;
 extern Variable ss_pipscale;
 extern Variable ss_verticalsplit;
+extern Variable ss_force_primary_fullscreen;
 extern Variable cl_viewmodelfov;
 
 extern Command sar_workshop_skip;

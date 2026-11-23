@@ -56,7 +56,6 @@ Variable sar_cam_path_sync_to_demo("sar_cam_path_sync_to_demo", "1", 0, 1,
                        "If enabled, path will be synchronized to demo in cinematic mode.\n");
 
 Variable cl_skip_player_render_in_main_view;
-Variable ss_force_primary_fullscreen;
 
 void ResetCameraRelatedCvars() {
 	cl_skip_player_render_in_main_view.SetValue(cl_skip_player_render_in_main_view.GetString());
@@ -70,7 +69,6 @@ Camera::Camera() {
 
 	//a bunch of console variables later used in a janky hack
 	cl_skip_player_render_in_main_view = Variable("cl_skip_player_render_in_main_view");
-	ss_force_primary_fullscreen = Variable("ss_force_primary_fullscreen");
 }
 
 Camera::~Camera() {

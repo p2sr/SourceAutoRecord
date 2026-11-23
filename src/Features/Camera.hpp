@@ -22,7 +22,6 @@ extern Variable sar_cam_path_interp;
 extern Variable sar_cam_path_sync_to_demo;
 
 extern Variable cl_skip_player_render_in_main_view;
-extern Variable ss_force_primary_fullscreen;
 
 
 struct CameraState {
