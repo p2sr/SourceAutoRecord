@@ -41,6 +41,7 @@ This file contains a detailed list of all features implemented by SourceAutoReco
 
 - **Auto Submit**:
   - Integration with [P2SR Challenge Mode Boards](https://board.portal2.sr) for automatic CM demo submission.
+  - Integration with [LPHUB](https://lp.portal2.sr) for automatic least portals demo submission, singleplayer only. In `autosubmit.key`, list `lp.portal2.sr` followed by your LPHUB autosubmit token on the next line, alongside the existing boards entry.
 
 - **Ghosts** - an in-game ghost racers, managed by `ghost_*` console commands:
   - An ability to **play demos as ghosts** (one or multiple at once) in current session.
