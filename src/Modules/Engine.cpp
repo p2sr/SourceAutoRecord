@@ -414,7 +414,6 @@ DETOUR(Engine::Frame) {
 
 	engine->lastTick = session->GetTick();
 
-	Renderer::Frame();
 	engine->demoplayer->HandlePlaybackFix();
 	Event::Trigger<Event::FRAME>({});
 
@@ -804,6 +803,7 @@ void _Host_RunFrame_Render_Detour() {
 		// Just do a normal render
 		_Host_RunFrame_Render_Hook.Disable();
 		_Host_RunFrame_Render();
+		Renderer::Frame();
 		_Host_RunFrame_Render_Hook.Enable();
 	}
 }
