@@ -9,7 +9,7 @@ namespace AngleToolsUtils {
 		Exponential,
 	};
 
-	float Ease(float t, EasingType easingType);
+	float Ease(int slot, float t, EasingType easingType);
 	EasingType ParseEasingType(std::string typeStr);
-	Vector GetInterpolatedViewAnalog(Vector currentAngles, Vector targetAngles, int easingTicks, int elapsedTicks, EasingType easingType);
+	Vector GetInterpolatedViewAnalog(int slot, Vector currentAngles, Vector targetAngles, int easingTicks, int elapsedTicks, EasingType easingType);
 }

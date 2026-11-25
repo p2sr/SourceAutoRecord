@@ -29,8 +29,8 @@ void AbsoluteMoveTool::Apply(TasFramebulk &fb, const TasPlayerInfo &playerInfo) 
 	float desired = params.direction;
 	float rad = DEG2RAD(desired - angles.y);
 
-	float x = -sinf(rad);
-	float y = cosf(rad) / forward_coef;
+	float x = -tasSinf(rad);
+	float y = tasCosf(rad) / forward_coef;
 
 	x *= params.strength;
 	y *= params.strength;

@@ -1,6 +1,7 @@
 #pragma once
 #include "SDK.hpp"
 
+#include <cmath>
 #include <random>
 
 #define M_PI 3.14159265358979323846
@@ -14,6 +15,12 @@ class Matrix;
 namespace Math {
 
 	void SinCos(float radians, float *sine, float *cosine);
+	float Sin(float x);
+	float Cos(float x);
+	float Atan2(float y, float x);
+	float Acos(float x);
+	float Asin(float x);
+	float Pow(float x, float y);
 	float AngleNormalize(float angle);
 	float VectorNormalize(Vector &vec);
 	void VectorAdd(const Vector &a, const Vector &b, Vector &c);
@@ -33,6 +40,27 @@ namespace Math {
 	void LerpAngles(const QAngle &oldAng, const QAngle &newAng, float time, QAngle &outPut);
 }  // namespace Math
 
+// TAS tool math goes through double, as MSVC's x86 CRT does for sinf etc.;
+// glibc's float versions give other results on some inputs. The round trip
+// must not be optimized away (no -ffast-math)
+inline float Math::Sin(float x) {
+	return (float)std::sin((double)x);
+}
+inline float Math::Cos(float x) {
+	return (float)std::cos((double)x);
+}
+inline float Math::Atan2(float y, float x) {
+	return (float)std::atan2((double)y, (double)x);
+}
+inline float Math::Acos(float x) {
+	return (float)std::acos((double)x);
+}
+inline float Math::Asin(float x) {
+	return (float)std::asin((double)x);
+}
+inline float Math::Pow(float x, float y) {
+	return (float)std::pow((double)x, (double)y);
+}
 inline void Math::SinCos(float radians, float *sine, float *cosine) {
 #ifdef _WIN32
 	_asm {

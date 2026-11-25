@@ -15,6 +15,7 @@
 #include "Event.hpp"
 #include "Variable.hpp"
 
+#include <cfloat>
 #include <climits>
 #include <fstream>
 #include "TasTools/JumpTool.hpp"
@@ -844,7 +845,18 @@ void TasPlayer::ApplyTools(TasFramebulk &fb, const TasPlayerInfo &pInfo, TasTool
 	for (std::string toolName : TasTool::priorityList) {
 		auto tool = TasTool::GetInstanceByName(slot, toolName);
 		if (!CanProcessTool(tool, processType)) continue;
+#ifdef _M_IX86
+		// MSVC keeps some float intermediates on the x87, which rounds them to double; round them to
+		// float as with gcc and clang. Only the movement and view angle tools do float math; the others keep
+		// the game's setting.
+		bool pin = TAS_SCRIPT_VERSION_AT_LEAST(10) && (tool->GetBulkType() & (MOVEMENT | VIEWANGLES));
+		unsigned int oldControl = pin ? _controlfp(0, 0) : 0;
+		if (pin) _controlfp(_PC_24, _MCW_PC);
+#endif
 		tool->Apply(fb, pInfo);
+#ifdef _M_IX86
+		if (pin) _controlfp(oldControl, _MCW_PC);
+#endif
 	}
 }
 

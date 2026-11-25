@@ -113,6 +113,7 @@ void AutoAimTool::Apply(TasFramebulk &bulk, const TasPlayerInfo &playerInfo) {
 	yaw *= 180.0f / M_PI;
 
 	bulk.viewAnalog = AngleToolsUtils::GetInterpolatedViewAnalog(
+		slot,
 		QAngleToVector(playerInfo.angles), 
 		Vector{pitch, yaw}, 
 		params.easingTicks, 
