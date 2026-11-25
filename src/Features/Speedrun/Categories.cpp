@@ -4,6 +4,7 @@
 #include "Event.hpp"
 #include "Features/Demo/DemoGhostPlayer.hpp"
 #include "Features/Hud/Hud.hpp"
+#include "Features/Hud/Toasts.hpp"
 #include "Modules/Client.hpp"
 #include "Modules/Engine.hpp"
 #include "Modules/Server.hpp"
@@ -16,7 +17,7 @@
 #include <optional>
 #include <variant>
 
-Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n");
+Variable sar_speedrun_draw_triggers("sar_speedrun_draw_triggers", "0", "Draw the triggers associated with speedrun rules in the world.\n0 = off, 1 = boxes + text, 2 = boxes only\n");
 Variable sar_speedrun_triggers_info("sar_speedrun_triggers_info", "0", "Print player velocity (and position) upon mtrigger activation.\n1 - position and velocity\n2 - only horizontal velocity\n");
 
 static std::optional<std::vector<std::string>> extractPartialArgs(const char *str, const char *cmd) {
@@ -68,6 +69,13 @@ static std::string g_currentCategory = "Singleplayer";
 static std::map<std::string, SpeedrunCategory> g_categories;
 static std::map<std::string, SpeedrunRule> g_rules;
 
+// Ad-hoc trigger state
+static std::vector<std::string> g_adhocTriggers;
+static int g_adhocCounter = 0;
+static std::string g_previousCategory = "";
+static bool g_practiceActive = false;
+static std::map<std::string, int> g_adhocBestTicks;  // Best ticks per adhoc trigger
+
 void SpeedrunTimer::InitCategories() {
 	InitSpeedrunCategoriesTo(&g_categories, &g_rules, &g_currentCategory);
 }
@@ -114,6 +122,39 @@ static void dispatchRule(std::string name, SpeedrunRule *rule) {
 	}
 
 	rule->fired = true;
+
+	// Track and display adhoc trigger delta (after split)
+	if (rule->action == RuleAction::SPLIT && g_practiceActive) {
+		// Check if this is an adhoc trigger
+		auto it = std::find(g_adhocTriggers.begin(), g_adhocTriggers.end(), name);
+		if (it != g_adhocTriggers.end()) {
+			int currentTicks = SpeedrunTimer::GetTotalTicks();
+			float currentTime = currentTicks * engine->GetIPT();
+
+			auto bestIt = g_adhocBestTicks.find(name);
+			if (bestIt == g_adhocBestTicks.end()) {
+				// First time hitting this trigger - just show time
+				g_adhocBestTicks[name] = currentTicks;
+				toastHud.AddToast("adhoc", SpeedrunTimer::Format(currentTime));
+			} else {
+				int bestTicks = bestIt->second;
+				int deltaTicks = currentTicks - bestTicks;
+				float deltaTime = deltaTicks * engine->GetIPT();
+
+				if (deltaTicks < 0) {
+					// New best - green
+					g_adhocBestTicks[name] = currentTicks;
+					toastHud.AddToast("adhoc_best", Utils::ssprintf("%s (%.3f)", SpeedrunTimer::Format(currentTime).c_str(), deltaTime));
+				} else if (deltaTicks > 0) {
+					// Slower - red
+					toastHud.AddToast("adhoc_slow", Utils::ssprintf("%s (+%.3f)", SpeedrunTimer::Format(currentTime).c_str(), deltaTime));
+				} else {
+					// Exact same time - neutral
+					toastHud.AddToast("adhoc", SpeedrunTimer::Format(currentTime));
+				}
+			}
+		}
+	}
 
 	// Handle `sar_speedrun_triggers_info`
 	int info = sar_speedrun_triggers_info.GetInt();
@@ -206,8 +247,8 @@ void SpeedrunTimer::TestJumpRules(Vector pos, int slot) {
 
 bool SpeedrunTimer::TestPortalRules(Vector pos, int slot, PortalColor portal) {
 	bool result = GeneralTestRules<PortalPlacementRule>(slot, pos, portal);
-	if(result)
-		demoGhostPlayer.TestInputRule( pos, slot, portal);
+	if (result)
+		demoGhostPlayer.TestInputRule(pos, slot, portal);
 
 	return result;
 }
@@ -279,17 +320,18 @@ ON_EVENT(RENDER) {
 		auto rule = SpeedrunTimer::GetRule(ruleName);
 		if (!rule) continue;
 		if (std::find_if(rule->maps.begin(), rule->maps.end(), [](std::string map) {
-				return map == "*" || !strcasecmp(map.c_str(), engine->GetCurrentMapName().c_str());
-			}) == rule->maps.end()) continue;
+							return map == "*" || !strcasecmp(map.c_str(), engine->GetCurrentMapName().c_str());
+						}) == rule->maps.end()) continue;
+		bool showText = sar_speedrun_draw_triggers.GetInt() == 1;
 		if (std::holds_alternative<ZoneTriggerRule>(rule->rule)) {
 			std::get<ZoneTriggerRule>(rule->rule).DrawInWorld();
-			std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
+			if (showText) std::get<ZoneTriggerRule>(rule->rule).OverlayInfo(rule);
 		} else if (std::holds_alternative<JumpTriggerRule>(rule->rule)) {
 			std::get<JumpTriggerRule>(rule->rule).DrawInWorld();
-			std::get<JumpTriggerRule>(rule->rule).OverlayInfo(rule);
+			if (showText) std::get<JumpTriggerRule>(rule->rule).OverlayInfo(rule);
 		} else if (std::holds_alternative<PortalPlacementRule>(rule->rule)) {
 			std::get<PortalPlacementRule>(rule->rule).DrawInWorld();
-			std::get<PortalPlacementRule>(rule->rule).OverlayInfo(rule);
+			if (showText) std::get<PortalPlacementRule>(rule->rule).OverlayInfo(rule);
 		}
 	}
 }
@@ -566,7 +608,7 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 		: type == "load"   ? MapLoadRule::Create(params)
 		: type == "end"    ? MapEndRule::Create(params)
 		: type == "jump"   ? JumpTriggerRule::Create(params)
-		: std::optional<SpeedrunRule>{};
+																					: std::optional<SpeedrunRule>{};
 
 	if (!rule) {
 		console->Print("Failed to create rule\n");
@@ -599,7 +641,7 @@ bool SpeedrunTimer::CreateRule(std::string name, std::string type, std::map<std:
 		char *end;
 		int start = strtol(cycle->c_str(), &end, 10);
 		if (*end == ',') {
-			int freq = atoi(end+1);
+			int freq = atoi(end + 1);
 			rule->cycle = {start, freq};
 		}
 	}
@@ -679,4 +721,109 @@ CON_COMMAND(sar_speedrun_reset_categories, "sar_speedrun_reset_categories - dele
 	SpeedrunTimer::InitCategories();
 	SpeedrunTimer::CategoryChanged();
 	g_scheduledRules.clear();
+}
+
+// ============================================
+// Ad-hoc triggers
+// ============================================
+
+CON_COMMAND(sar_speedrun_adhoc_trigger, "sar_speedrun_adhoc_trigger - create a trigger at current position that splits the timer when touched\n") {
+	// Get player position first (fail early if no player)
+	void *player = server->GetPlayer(GET_SLOT() + 1);
+	if (!player) {
+		console->Print("No player found\n");
+		return;
+	}
+	Vector pos = server->GetAbsOrigin(player);
+
+	// On first adhoc trigger, switch to practice category
+	if (!g_practiceActive) {
+		// Save current category in C++, sync svar to practice
+		g_previousCategory = g_currentCategory;
+		engine->ExecuteCommand("svar_set category practice");
+		engine->ExecuteCommand("svar_set __force_cat 1");
+		if (!lookupMap(g_categories, std::string("Practice"))) {
+			g_categories["Practice"] = SpeedrunCategory{{}};
+		}
+		g_currentCategory = "Practice";
+		SpeedrunTimer::CategoryChanged();
+		g_scheduledRules.clear();
+
+		g_practiceActive = true;
+		console->Print("Switched to practice category\n");
+	}
+	// Generate unique rule name
+	std::string ruleName = Utils::ssprintf("adhoc_%d", g_adhocCounter++);
+
+	// Create rule parameters
+	std::map<std::string, std::string> params = {
+		{"center", Utils::ssprintf("%f,%f,%f", pos.x, pos.y, pos.z)},
+		{"size", "64,64,128"},
+		{"angle", "0"},
+		{"action", "split"},
+		{"map", "*"},
+	};
+
+	// Create the rule
+	if (!SpeedrunTimer::CreateRule(ruleName, "zone", params)) {
+		console->Print("Failed to create adhoc trigger\n");
+		return;
+	}
+
+	// Add to Practice category
+	if (!SpeedrunTimer::AddRuleToCategory("Practice", ruleName)) {
+		console->Print("Failed to add adhoc trigger to category\n");
+		return;
+	}
+
+	g_adhocTriggers.push_back(ruleName);
+
+	console->Print("Created adhoc trigger '%s' at %.0f, %.0f, %.0f (total: %d)\n", ruleName.c_str(), pos.x, pos.y, pos.z, (int)g_adhocTriggers.size());
+}
+
+CON_COMMAND(sar_speedrun_adhoc_reset_times, "sar_speedrun_adhoc_reset_times - reset all saved best times for adhoc triggers\n") {
+	g_adhocBestTicks.clear();
+	console->Print("Reset all adhoc trigger best times\n");
+}
+
+CON_COMMAND(sar_speedrun_adhoc_clear, "sar_speedrun_adhoc_clear - remove all adhoc triggers and restore previous category\n") {
+	if (g_adhocTriggers.empty() && !g_practiceActive) {
+		console->Print("No adhoc triggers to clear\n");
+		return;
+	}
+
+	int count = 0;
+
+	// Remove all adhoc triggers from Practice category
+	auto cat = lookupMap(g_categories, std::string("Practice"));
+	for (const auto &name : g_adhocTriggers) {
+		if (cat) {
+			auto it = std::find(cat->rules.begin(), cat->rules.end(), name);
+			if (it != cat->rules.end()) {
+				cat->rules.erase(it);
+			}
+		}
+		g_rules.erase(name);
+		count++;
+	}
+	g_adhocTriggers.clear();
+
+	// Restore previous category via svar and re-enable auto-detection
+	if (g_practiceActive && !g_previousCategory.empty()) {
+		// Sync svar back from C++ source of truth
+		engine->ExecuteCommand(Utils::ssprintf("svar_set category %s", g_previousCategory.c_str()).c_str());
+		engine->ExecuteCommand("svar_set __force_cat 0");
+		engine->ExecuteCommand(Utils::ssprintf("sar_speedrun_category %s", g_previousCategory.c_str()).c_str());
+
+		g_currentCategory = g_previousCategory;
+		SpeedrunTimer::CategoryChanged();
+		console->Print("Restored category: %s\n", g_previousCategory.c_str());
+	}
+
+	g_practiceActive = false;
+	g_previousCategory = "";
+	g_adhocCounter = 0;
+	g_adhocBestTicks.clear();
+
+	console->Print("Cleared %d adhoc triggers\n", count);
 }
