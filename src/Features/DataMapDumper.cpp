@@ -77,7 +77,7 @@ void DataMapDumper::Dump(bool dumpServer) {
 			}
 			map = map->baseMap;
 		}
-		file.seekp(-1, SEEK_DIR_CUR);
+		file.seekp(-1, std::ios_base::cur);
 		file << "]}";
 	};
 
@@ -96,7 +96,7 @@ void DataMapDumper::Dump(bool dumpServer) {
 		}
 	}
 
-	file.seekp(-1, SEEK_DIR_CUR);
+	file.seekp(-1, std::ios_base::cur);
 	file << "]}";
 	file.close();
 
