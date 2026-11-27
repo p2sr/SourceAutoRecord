@@ -421,7 +421,7 @@ bool EngineDemoRecorder::Init() {
 		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::SetSignonState_Hook, EngineDemoRecorder::SetSignonState, Offsets::SetSignonState);
 		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StartRecording_Hook, EngineDemoRecorder::StartRecording, Offsets::StartRecording);
 		this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::StopRecording_Hook, EngineDemoRecorder::StopRecording, Offsets::StopRecording);
-		if (!sar.game->Is(SourceGame_INFRA | SourceGame_Portal2_2011)) {
+		if (!sar.game->Is(SourceGame_INFRA)) {
 			this->s_ClientDemoRecorder->Hook(EngineDemoRecorder::RecordCustomData_Hook, EngineDemoRecorder::RecordCustomData, Offsets::RecordCustomData);
 		}
 
@@ -459,14 +459,28 @@ void EngineDemoRecorder::RecordData(const void *data, unsigned long length) {
 	// custom data, and stops us from doing weird things in co-op demos
 	// with menus.
 
+	//
+	// Portal 2 4554 has no RadialMenuMouseCallback, so type 0 doesn't exist
+	// there, and the vanilla engine calls an uninitialized pointer for any
+	// type it has no callback for (CUtlVector growth never zeroes the
+	// callback member). Instead we record as type -1, the callback table,
+	// with an entry count of 0: vanilla clears its (already empty) table and
+	// skips the rest of the payload, which is our data.
+
 	if (!this->customDataReady) return;
 	if (!EngineDemoRecorder::RecordCustomData) return;
 
+	bool useTable = sar.game->Is(SourceGame_Portal2_2011);
+
 	// once again, what the fuck c++, i just want a vla
 	char *buf = (char *)malloc(length + 8);
-	memcpy(buf, engine->demorecorder->coopRadialMenuLastPos, 8);  // Actual cursor x and y pos
+	if (useTable) {
+		memcpy(buf, SAR_DEMO_DATA_TABLE_PREFIX, 8);
+	} else {
+		memcpy(buf, engine->demorecorder->coopRadialMenuLastPos, 8);  // Actual cursor x and y pos
+	}
 	memcpy(buf + 8, data, length);
-	EngineDemoRecorder::RecordCustomData(this->s_ClientDemoRecorder->ThisPtr(), 0, buf, length + 8);
+	EngineDemoRecorder::RecordCustomData(this->s_ClientDemoRecorder->ThisPtr(), useTable ? -1 : 0, buf, length + 8);
 	free(buf);
 }
 

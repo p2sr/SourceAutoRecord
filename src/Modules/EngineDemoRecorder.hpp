@@ -11,6 +11,14 @@
 // Ticks before demo autostop
 #define DEMO_AUTOSTOP_DELAY 15
 
+// Where the game registers no demo custom data callback (Portal 2 4554), SAR
+// data is recorded as callback index -1 (the callback table) with this prefix.
+// The engine reads the first 4 bytes as the table's entry count: 0 makes it
+// clear an already-empty table and ignore the rest. See RecordData.
+// Same length as the cursor-position prefix used with index 0, so the SAR
+// data always starts 8 bytes into the payload.
+inline constexpr char SAR_DEMO_DATA_TABLE_PREFIX[8] = {0, 0, 0, 0, 'S', 'A', 'R', 1};
+
 class EngineDemoRecorder : public Module {
 public:
 	Interface *s_ClientDemoRecorder = nullptr;
