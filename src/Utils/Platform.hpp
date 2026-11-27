@@ -14,7 +14,6 @@
 #	define MODULE_EXTENSION ".dll"
 #	define __rescall __thiscall
 #	define DLL_EXPORT extern "C" __declspec(dllexport)
-#	define SEEK_DIR_CUR std::ios_base::_Seekdir::_Seekcur
 #	define STDCALL_NAME(base, param_bytes) "_" base "@" #param_bytes
 
 #	define DECL_DETOUR(name, ...)                                   \
@@ -82,7 +81,6 @@ namespace {
 #	define __cdecl __attribute__((__cdecl__))
 #	define __fastcall __attribute__((__fastcall__))
 #	define DLL_EXPORT extern "C" __attribute__((visibility("default")))
-#	define SEEK_DIR_CUR std::ios_base::cur
 #	define STDCALL_NAME(base, param_bytes) base
 
 #	define DECL_DETOUR(name, ...)                                   \

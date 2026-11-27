@@ -48,7 +48,7 @@ void ClassDumper::Dump(bool dumpServer) {
 		}
 	}
 
-	file.seekp(-1, SEEK_DIR_CUR);
+	file.seekp(-1, std::ios_base::cur);
 	file << "]}";
 	file.close();
 
@@ -90,7 +90,7 @@ void ClassDumper::DumpSendTable(std::ofstream &file, SendTable *table) {
 	}
 
 	if (table->m_nProps != 0) {
-		file.seekp(-1, SEEK_DIR_CUR);
+		file.seekp(-1, std::ios_base::cur);
 	}
 	file << "]}";
 }
@@ -130,7 +130,7 @@ void ClassDumper::DumpRecvTable(std::ofstream &file, RecvTable *table) {
 	}
 
 	if (table->m_nProps != 0) {
-		file.seekp(-1, SEEK_DIR_CUR);
+		file.seekp(-1, std::ios_base::cur);
 	}
 	file << "]}";
 }

@@ -27,18 +27,18 @@ InputHud::InputHud()
 	: Hud(HudType_InGame | HudType_LoadingScreen, true) {
 
 	elements = {
-		{"forward", false, IN_FORWARD},
-		{"back", false, IN_BACK},
-		{"moveleft", false, IN_MOVELEFT},
-		{"moveright", false, IN_MOVERIGHT},
-		{"jump", false, IN_JUMP},
-		{"duck", false, IN_DUCK},
-		{"zoom", false, IN_ZOOM},
-		{"use", false, IN_USE},
-		{"attack", false, IN_ATTACK},
-		{"attack2", false, IN_ATTACK2},
-		{"movement", true, 0},
-		{"angles", true, 1}
+		InputHudElement{"forward", false, IN_FORWARD},
+		InputHudElement{"back", false, IN_BACK},
+		InputHudElement{"moveleft", false, IN_MOVELEFT},
+		InputHudElement{"moveright", false, IN_MOVERIGHT},
+		InputHudElement{"jump", false, IN_JUMP},
+		InputHudElement{"duck", false, IN_DUCK},
+		InputHudElement{"zoom", false, IN_ZOOM},
+		InputHudElement{"use", false, IN_USE},
+		InputHudElement{"attack", false, IN_ATTACK},
+		InputHudElement{"attack2", false, IN_ATTACK2},
+		InputHudElement{"movement", true, 0},
+		InputHudElement{"angles", true, 1}
 	};
 
 	ApplyPreset("normal", true);
