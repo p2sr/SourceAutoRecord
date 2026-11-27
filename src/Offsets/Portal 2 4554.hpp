@@ -6,8 +6,9 @@
 // stolen from Beginner's Guide
 SIGSCAN_WINDOWS(MatrixBuildRotationAboutAxis, "55 8B EC 51 F3 0F 10 45 ? 0F 5A C0 F2 0F 59 05 ? ? ? ? 66 0F 5A C0 F3 0F 11 45 ? F3 0F 5A C0 E8 ? ? ? ? F2 0F 5A C0 F3 0F 11 45 ? F3 0F 10 45 ? 0F 5A C0 E8 ? ? ? ? 8B 45 ? F3 0F 10 60")
 
-// stolen from Infra
-SIGSCAN_WINDOWS(DrawTranslucentRenderables, "55 8B EC 81 EC 80 00 00 00 53 56 8B F1")
+// "DrawTranslucentEntities" xref -> CRendering3dView::DrawTranslucentRenderables
+// (the old INFRA-derived pattern matched CEconItem vfunc 9 instead)
+SIGSCAN_WINDOWS(DrawTranslucentRenderables, "55 8B EC 83 EC 7C 53 56 8B F1 8B 0D ? ? ? ? 8B 01 8B 90 BC 01 00 00 57")
 
 // same as something else
 OFFSET_WINDOWS(HostState_OnClientConnected, 695)
@@ -32,6 +33,7 @@ OFFSET_WINDOWS(ExecuteClientCmd, 103)
 OFFSET_WINDOWS(GetSaveDirName, 123)
 OFFSET_WINDOWS(GetActiveSplitScreenPlayerSlot, 126)
 OFFSET_WINDOWS(GetSteamAPIContext, 176)
+OFFSET_WINDOWS(IsActiveApp, 186) // 187 is IsClientLocalToActiveServer
 
 // CHLClient
 //OFFSET_DEFAULT(GetAllClasses, 8, 8) // verified
@@ -64,6 +66,8 @@ OFFSET_WINDOWS(FindMaterial, 81) // confirmed
 OFFSET_WINDOWS(CreateProceduralTexture, 89) // confirmed
 OFFSET_WINDOWS(GetRenderContext, 111) // found
 OFFSET_WINDOWS(RemoveMaterial, 153) // found
+OFFSET_WINDOWS(CacheUsedMaterials, 77) // client "LevelInitPreEntity - CacheUsedMaterials - Start" -> vtable +0x134
+OFFSET_WINDOWS(AllowThreading, 133) // "Queued Material System: ENABLED!\n" xref
 
 // CEngineTool
 //OFFSET_DEFAULT(GetCurrentMap, 25, 26) // good
@@ -90,6 +94,7 @@ OFFSET_WINDOWS(viewangles, 19112) // found
 // CBaseEntity
 OFFSET_WINDOWS(AcceptInput, 39) // found
 OFFSET_WINDOWS(IsPlayer, 84) // found
+OFFSET_WINDOWS(StartTouch, 101) // 102 is Touch; CBaseTrigger overrides 101/103
 
 // CPortal_Player
 //OFFSET_WINDOWS(GetPaintPower, 2) // this seems to be fine as is
@@ -100,7 +105,10 @@ OFFSET_WINDOWS(UseSpeedPower, 508) // found
 OFFSET_WINDOWS(OnGameOverlayActivated, 92) // found
 
 // IPhysicsObject
-// everything (should) be fine.
+// all good (verified against CPhysicsObject vtable)
+
+// surfacedata_t
+OFFSET_WINDOWS(jumpFactor, 72) // CGameMovement::CheckJumpButton reads m_pSurfaceData + 0x48
 
 // Steam API
 SIGSCAN_EMPTY(interfaceMgrSig)

@@ -142,7 +142,7 @@ OFFSET_DEFAULT(StopPlayback, 16, 17)
 OFFSET_DEFAULT(IsPlayingBack, 6, 7)
 OFFSET_DEFAULT(IsPlaybackPaused, 7, 8)
 OFFSET_DEFAULT(IsSkipping, 9, 10)
-OFFSET_DEFAULT(SkipToTick, 13, 14)
+OFFSET_DEFAULT(SkipToTick, 14, 15) // (int tick, bool relative, bool pause), stores m_nSkipToTick; the slot before takes a float
 OFFSET_DEFAULT(m_szFileName, 4, 4)
 
 // CClientState
@@ -161,7 +161,7 @@ OFFSET_DEFAULT(GetClientClass, 18, 19)
 OFFSET_DEFAULT(GetPredDescMap, 17, 20)
 
 // CBasePlayer
-OFFSET_DEFAULT(m_pSurfaceData, 3868, 4116)
+OFFSET_DEFAULT(m_pSurfaceData, 4092, 4116) // CGameMovement::CheckJumpButton: player->m_pSurfaceData->game.jumpFactor; right before m_surfaceFriction
 OFFSET_DEFAULT(m_pShadowStand, 3160, 3184)   // "player_stand" -> CBasePlayer::InitVCollision -> CBasePlayer::SetupVPhysicsShadow -> usage of pStandHullName -> vtable offset write
 OFFSET_DEFAULT(m_pShadowCrouch, 3164, 3188)  // ^ "player_crouch" pCrouchHullName
 OFFSET_DEFAULT(S_m_surfaceFriction, 4096, 4120)
@@ -189,7 +189,7 @@ OFFSET_DEFAULT(TraceRay, 5, 5)
 OFFSET_DEFAULT(GetCurrentMap, 25, 26)
 OFFSET_DEFAULT(HostFrameTime, 39, 40)
 OFFSET_DEFAULT(ClientTime, 47, 48)
-OFFSET_DEFAULT(PrecacheModel, 61, 61)
+OFFSET_DEFAULT(PrecacheModel, 62, 63) // the slot before is PrecacheSound ("sound/%s"); this one checks "-nopreloadmodels"
 OFFSET_DEFAULT(ClientTick, 49, 50)
 OFFSET_DEFAULT(ServerTick, 45, 46)
 OFFSET_DEFAULT(HostTick, 41, 42)
@@ -263,7 +263,7 @@ OFFSET_DEFAULT(GetTextColorForClient, 33, 41)
 OFFSET_DEFAULT(OnGameOverlayActivated, 148, 156)
 
 // surfacedata_t
-OFFSET_DEFAULT(jumpFactor, 68, 72)
+OFFSET_DEFAULT(jumpFactor, 84, 84) // CGameMovement::CheckJumpButton reads m_pSurfaceData + 0x54
 
 // IPhysicsObject
 OFFSET_DEFAULT(IsAsleep, 2, 3)

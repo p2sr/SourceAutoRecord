@@ -89,7 +89,12 @@ REDECL(Server::GetPlayerViewOffset);
 REDECL(Server::StartTouchChallengeNode);
 REDECL(Server::say_callback);
 
-SMDECL(Server::GetPortals, int, iNumPortalsPlaced);
+int Server::GetPortals(void *entity) {
+	// iNumPortalsPlaced doesn't exist in 2011 Portal 2 (see also LPHud.cpp);
+	// a failed field lookup would read the entity's vtable pointer instead.
+	if (sar.game->Is(SourceGame_Portal2_2011)) return 0;
+	return SE(entity)->field<int>("iNumPortalsPlaced");
+}
 SMDECL(Server::GetAbsOrigin, Vector, m_vecAbsOrigin);
 SMDECL(Server::GetAbsAngles, QAngle, m_angAbsRotation);
 SMDECL(Server::GetLocalVelocity, Vector, m_vecVelocity);

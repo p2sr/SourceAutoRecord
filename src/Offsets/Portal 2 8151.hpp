@@ -4,6 +4,14 @@
 OFFSET_DEFAULT(CacheUsedMaterials, 0, 0) // texture preload fix only verified on Portal 2 10090
 OFFSET_DEFAULT(AllowThreading, 0, 0)
 
+// These were corrected for 10090 but haven't been checked on any older build.
+// Keep the values every game below this file has always used until someone
+// verifies them there.
+OFFSET_DEFAULT(SkipToTick, 13, 14)
+OFFSET_DEFAULT(m_pSurfaceData, 3868, 4116)
+OFFSET_DEFAULT(PrecacheModel, 61, 61)
+OFFSET_DEFAULT(jumpFactor, 68, 72)
+
 OFFSET_LINUX(tickcount, 74)
 OFFSET_LINUX(interval_per_tick, 82)
 OFFSET_LINUX(demoplayer, 92)
