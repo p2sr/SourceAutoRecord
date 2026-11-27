@@ -445,8 +445,10 @@ Memory::Patch *g_ReadConsoleCommandPatch = nullptr;
 
 DETOUR(Engine::ReadCustomData, int *callbackIndex, char **data) {
 	auto size = Engine::ReadCustomData(thisptr, callbackIndex, data);
-	if (callbackIndex && data && *callbackIndex == 0 && size > 8) {
-		engine->demoplayer->CustomDemoData(*data + 8, size - 8);
+	if (callbackIndex && data && size > 8) {
+		if (*callbackIndex == 0 || (*callbackIndex == -1 && !memcmp(*data, SAR_DEMO_DATA_TABLE_PREFIX, 8))) {
+			engine->demoplayer->CustomDemoData(*data + 8, size - 8);
+		}
 	}
 	return size;
 }

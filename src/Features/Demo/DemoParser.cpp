@@ -261,7 +261,8 @@ bool DemoParser::Parse(std::string filePath, Demo *demo, bool ghostRequest, std:
 							char *data = new char[length];
 							file.read(data, length);
 							
-							if (customData) {
+							// the engine's own callback table can be shorter than our 8-byte prefix
+							if (customData && length > 8) {
 								std::string str = this->DecodeCustomData(data + 8);
 								if (!str.empty()) {
 									(*customData)[str] = std::make_tuple(tick, false);
